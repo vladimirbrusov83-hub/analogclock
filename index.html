@@ -198,7 +198,24 @@ button{font:inherit;cursor:pointer;color:inherit}
 .sway{animation:sway .5s ease-in-out infinite}
 @keyframes spinw{to{transform:rotate(360deg)}}
 .wheel{animation:spinw .6s linear infinite}.mhand{animation:spinw 12s linear infinite}
-@media (prefers-reduced-motion:reduce){.bob,.glow,.spin,.flash,.w1,.w2,.w3,.needle,.scene svg,.tele .cur,.tw,.aur,.aur2,.snow,.smoke,.flick,.glow2,.rotor,.hover,.lift,.sc1,.sc2,.sway,.wheel,.mhand{animation:none}}
+/* view transitions + feedback motion */
+@keyframes viewin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#view.in{animation:viewin .32s ease-out}
+@keyframes slam{0%{opacity:0;transform:rotate(-6deg) scale(2.6)}60%{opacity:1;transform:rotate(-6deg) scale(.92)}100%{transform:rotate(-6deg) scale(1)}}
+.stamp{animation:slam .5s cubic-bezier(.16,1,.3,1) both}
+.stamp.late{animation-delay:.45s}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
+.opt.right{animation:pop .35s ease-out}
+@keyframes fbin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.fb{animation:fbin .25s ease-out}
+@keyframes nudge{0%,100%{box-shadow:5px 5px 0 var(--ink),0 0 0 0 rgba(217,165,33,.0)}50%{box-shadow:5px 5px 0 var(--ink),0 0 0 5px rgba(217,165,33,.55)}}
+.mission.next{border-color:var(--ink);background:#f3e7b4;animation:nudge 2s ease-in-out infinite}
+.mission.next .no{background:var(--gold);color:var(--ink)}
+.spark{position:fixed;pointer-events:none;z-index:50;font:400 18px var(--head);color:var(--gold);
+  text-shadow:1px 1px 0 var(--ink);transition:transform .8s cubic-bezier(.15,.7,.3,1),opacity .8s ease-in}
+@keyframes hlp{0%,100%{opacity:.35}50%{opacity:.8}}
+.hlp{animation:hlp 1.6s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.bob,.glow,.spin,.flash,.w1,.w2,.w3,.needle,.scene svg,.tele .cur,.tw,.aur,.aur2,.snow,.smoke,.flick,.glow2,.rotor,.hover,.lift,.sc1,.sc2,.sway,.wheel,.mhand,#view.in,.stamp,.opt.right,.fb,.mission.next,.hlp{animation:none}}
 nav button[data-tab=mission]{background:var(--olive-l)}
 nav button[data-tab=mission].on{background:var(--red)}
 
@@ -217,6 +234,18 @@ nav button span{font:500 15px var(--body);text-transform:uppercase;letter-spacin
 nav button.on{background:var(--red)}
 nav button.on small{color:var(--cream)}
 .hint{font-size:14px;color:var(--muted);text-align:center;margin-top:8px;letter-spacing:.06em;text-transform:uppercase}
+/* compact header on inner screens */
+body.compact header{padding-bottom:10px}
+body.compact header .ak,body.compact header p{display:none}
+body.compact header h1{font-size:28px}
+body.compact header .flag{width:58px;top:calc(10px + env(safe-area-inset-top))}
+/* lesson progress */
+.meter{display:flex;align-items:center;gap:10px;margin:0 0 14px;font:500 14px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.meter .bar{flex:1;height:12px;border:2px solid var(--ink);background:var(--paper)}
+.meter .bar i{display:block;height:100%;background:var(--ok)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;margin-top:8px;font:500 13px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border:2px solid var(--ink);margin-right:6px;vertical-align:-2px;background:var(--c)}
+.fb .why{display:block;margin-top:6px;font-weight:400}
 @media (max-width:380px){
   header h1{font-size:32px} .opt{font-size:18px} .lcd{font-size:44px}
 }
@@ -299,12 +328,71 @@ function handShape(kind,which,c,lume){
     : `<rect x="97.5" y="22" width="5" height="88" fill="${c}"/><rect x="99" y="26" width="2" height="58" fill="${lume}"/>`;
 }
 
+const polar=(r,deg)=>[100+r*Math.sin(deg*Math.PI/180),100-r*Math.cos(deg*Math.PI/180)];
+function wedge(r,a0,a1){ // pie slice from angle a0 to a1 (degrees, clockwise from 12)
+  const [x0,y0]=polar(r,a0),[x1,y1]=polar(r,a1),big=((a1-a0+360)%360)>180?1:0;
+  return `M100 100 L${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 ${big} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z`;
+}
+function arc(r,a0,a1){
+  const [x0,y0]=polar(r,a0),[x1,y1]=polar(r,a1),big=((a1-a0+360)%360)>180?1:0;
+  return `M${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 ${big} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
+}
+// teaching layers drawn on the dial, under the hands
+function overlaySVG(kind,t,skin,o){
+  const h=Math.floor(t/60)%12,m=t%60,ha=t*0.5,ma=m*6,dark=skin.dial<'#8';
+  const fg=dark?'#f2ead0':'#1b1613';
+  let s='';
+  if(kind==='hour'||kind==='explain'){
+    s+=`<path d="${wedge(88,h*30,h*30+30)}" fill="#d9a521" opacity="${dark?.32:.28}"/>`;
+    s+=`<path d="${arc(84,h*30,h*30+30)}" fill="none" stroke="#d9a521" stroke-width="3"/>`;
+  }
+  if(kind==='minutes'){
+    s+=`<circle cx="100" cy="100" r="95" fill="none" stroke="#1b1613" stroke-width="7"/>`;
+    for(let i=0;i<12;i++){const [x,y]=polar(95,i*30);
+      s+=`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="6.2" fill="#d9a521" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-weight="700">${pad(i*5)}</text>`}
+    s+=`<path d="${wedge(86,0,ma||0.01)}" fill="#c8102e" opacity=".14"/>`;
+  }
+  if(kind==='halves'){
+    s+=`<path d="${wedge(88,0,180)}" fill="#2f6b2f" opacity="${m>0&&m<=30?.24:.1}"/>`;
+    s+=`<path d="${wedge(88,180,360)}" fill="#c8102e" opacity="${m>30?.22:.08}"/>`;
+    s+=`<line x1="100" y1="12" x2="100" y2="188" stroke="${fg}" stroke-width="1" stroke-dasharray="3 3" opacity=".5"/>`;
+    s+=`<text x="128" y="126" font-size="9" fill="#2f6b2f" text-anchor="middle" font-family="'Russo One',sans-serif" letter-spacing="1">PAST</text>`;
+    s+=`<text x="72" y="126" font-size="9" fill="#c8102e" text-anchor="middle" font-family="'Russo One',sans-serif" letter-spacing="1">TO</text>`;
+  }
+  if(kind==='ampm'){ // badge in the free corner outside the case
+    const pm=!!o.pm,cx=186,cy=4;
+    s+=`<circle cx="${cx}" cy="${cy}" r="14" fill="${pm?'#1d2a4a':'#f2d27a'}" stroke="#1b1613" stroke-width="2"/>`;
+    s+=pm
+      ?`<circle cx="${cx}" cy="${cy}" r="7" fill="#f2ead0"/><circle cx="${cx+3.5}" cy="${cy-2.5}" r="6" fill="#1d2a4a"/>`
+      :`<circle cx="${cx}" cy="${cy}" r="5" fill="#c8102e"/>`+[0,45,90,135,180,225,270,315].map(a=>{const r=d=>[cx+d*Math.sin(a*Math.PI/180),cy-d*Math.cos(a*Math.PI/180)];const[p,q]=r(7.5),[u,w]=r(10.5);return `<line x1="${p.toFixed(1)}" y1="${q.toFixed(1)}" x2="${u.toFixed(1)}" y2="${w.toFixed(1)}" stroke="#c8102e" stroke-width="1.6"/>`}).join('');
+    s+=`<text x="${cx}" y="${cy+27}" font-size="10" fill="#1b1613" text-anchor="middle" font-family="'Russo One',sans-serif" letter-spacing="1">${pm?'PM':'AM'}</text>`;
+  }
+  if(kind==='creep'){
+    const [nx,ny]=polar(62,h*30+30);
+    s+=`<path d="${arc(40,h*30,ha)}" fill="none" stroke="#d9a521" stroke-width="5" stroke-linecap="round"/>`;
+    s+=`<path d="${arc(40,ha,h*30+30)}" fill="none" stroke="#d9a521" stroke-width="1.5" stroke-dasharray="2 3"/>`;
+    s+=`<circle class="hlp" cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="11" fill="none" stroke="#c8102e" stroke-width="2.5"/>`;
+  }
+  if(kind==='explain'){
+    s+=`<line x1="100" y1="100" x2="100" y2="18" stroke="#c8102e" stroke-width="9" stroke-linecap="round" opacity=".28" transform="rotate(${ma} 100 100)"/>`;
+  }
+  return s;
+}
 function watchSVG(skin,t,o){
   const numerals=o.numerals||skin.numerals;
-  const day=new Date().getDate();
-  let s='';
+  const day=new Date().getDate(),u=o.uid||skin.id;
+  let s=`<defs>
+    <radialGradient id="bz${u}" cx="35%" cy="28%" r="80%"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".38"/></radialGradient>
+    <radialGradient id="dl${u}" cx="50%" cy="42%" r="62%"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></radialGradient>
+  </defs>`;
+  // lugs + crown (kept inside a viewBox centred on 100,100 so drag maths stays true)
+  s+=`<path d="M70 6 L74 -9 L126 -9 L130 6Z" fill="${skin.case}" stroke="#1b1613" stroke-width="2"/><path d="M70 194 L74 209 L126 209 L130 194Z" fill="${skin.case}" stroke="#1b1613" stroke-width="2"/>`;
+  s+=`<rect x="194" y="90" width="12" height="20" rx="2.5" fill="${skin.case}" stroke="#1b1613" stroke-width="2"/>`;
+  for(let y=93;y<108;y+=3) s+=`<line x1="196" y1="${y}" x2="204" y2="${y}" stroke="#1b1613" stroke-width=".8" opacity=".6"/>`;
   s+=`<circle cx="100" cy="100" r="98" fill="${skin.case}" stroke="#1b1613" stroke-width="2.5"/>`;
+  s+=`<circle cx="100" cy="100" r="97" fill="url(#bz${u})"/>`;
   s+=`<circle cx="100" cy="100" r="90" fill="${skin.dial}" stroke="${skin.rim}" stroke-width="2.5"/>`;
+  s+=`<circle cx="100" cy="100" r="89" fill="url(#dl${u})"/>`;
   for(let i=0;i<60;i++){
     const big=i%5===0,a=i*Math.PI/30,sn=Math.sin(a),cs=Math.cos(a);
     const r1=86,r2=big?(numerals==='none'?72:78):81;
@@ -333,25 +421,31 @@ function watchSVG(skin,t,o){
   s+=`<text x="100" y="${by+10}" font-size="5.5" fill="${skin.ink}" text-anchor="middle" font-family="Oswald,sans-serif" letter-spacing="1.2">${skin.sub}</text>`;
 
   const ha=t*0.5,ma=(t%60)*6;
+  if(o.ov) s+=overlaySVG(o.ov,t,skin,o);
   if(o.hl){
     const len=o.hl==='hour'?54:o.hl==='minute'?80:84;
     const ang=o.hl==='hour'?ha:o.hl==='minute'?ma:(o.sec||0)*6;
     s+=`<line x1="100" y1="100" x2="100" y2="${100-len}" stroke="#d9a521" stroke-width="11" stroke-linecap="round" opacity=".75" transform="rotate(${ang} 100 100)"/>`;
   }
+  const sh='rgba(0,0,0,.22)';
+  s+=`<g transform="translate(1.6 2.4)"><g transform="rotate(${ha} 100 100)">${handShape(skin.hands,'h',sh,sh)}</g><g transform="rotate(${ma} 100 100)">${handShape(skin.hands,'m',sh,sh)}</g></g>`;
   s+=`<g transform="rotate(${ha} 100 100)">${handShape(skin.hands,'h',skin.hand,skin.lume)}</g>`;
   s+=`<g transform="rotate(${ma} 100 100)">${handShape(skin.hands,'m',skin.hand,skin.lume)}</g>`;
   if(o.sec!=null){
-    s+=`<g transform="rotate(${o.sec*6} 100 100)"><line x1="100" y1="116" x2="100" y2="16" stroke="${skin.accent}" stroke-width="1.4"/><circle cx="100" cy="100" r="3" fill="${skin.accent}"/></g>`;
+    s+=`<g transform="rotate(${o.sec*6} 100 100)"><line x1="100" y1="118" x2="100" y2="14" stroke="${skin.accent}" stroke-width="1.4"/><circle cx="100" cy="114" r="3.2" fill="${skin.accent}"/><circle cx="100" cy="100" r="3" fill="${skin.accent}"/></g>`;
   }
-  s+=`<circle cx="100" cy="100" r="4.5" fill="${skin.case}" stroke="#1b1613" stroke-width="1.5"/>`;
+  s+=`<circle cx="100" cy="100" r="5" fill="${skin.case}" stroke="#1b1613" stroke-width="1.5"/><circle cx="100" cy="100" r="1.8" fill="${skin.accent}"/>`;
+  // glint on the polished bezel
+  s+=`<path d="${arc(93,292,338)}" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".45"/>`;
   return s;
 }
 
 /* ---------- clock widget ---------- */
 function makeClock(host,opt){
-  const c={t:opt.t||0,skin:opt.skin,numerals:opt.numerals||null,hl:opt.hl||null,sec:null,
+  const c={t:opt.t||0,skin:opt.skin,numerals:opt.numerals||null,hl:opt.hl||null,sec:null,ov:opt.ov||null,pm:false,
+    uid:'c'+(makeClock.n=(makeClock.n||0)+1),
     interactive:!!opt.interactive,onChange:opt.onChange||null,onDrag:opt.onDrag||null};
-  host.innerHTML='<svg viewBox="0 0 200 200" role="img" aria-label="analog watch"></svg>';
+  host.innerHTML='<svg viewBox="-12 -12 224 224" role="img" aria-label="analog watch"></svg>';
   const svg=host.firstChild;
   if(c.interactive) host.classList.add('drag');
   c.render=()=>{svg.innerHTML=watchSVG(c.skin,c.t,c)};
@@ -380,7 +474,7 @@ function makeClock(host,opt){
       c.onDrag&&c.onDrag();
       c.render();c.onChange&&c.onChange(c.t);
     };
-    svg.addEventListener('pointerdown',e=>{drag=true;cancelAnimationFrame(raf);svg.setPointerCapture(e.pointerId);move(e);e.preventDefault()});
+    svg.addEventListener('pointerdown',e=>{if(!c.interactive)return;drag=true;cancelAnimationFrame(raf);svg.setPointerCapture(e.pointerId);move(e);e.preventDefault()});
     svg.addEventListener('pointermove',e=>{if(drag){move(e);e.preventDefault()}});
     ['pointerup','pointercancel'].forEach(n=>svg.addEventListener(n,()=>{drag=false}));
   }
@@ -395,34 +489,40 @@ const LESSONS=[
   html:`<p>Every analog watch has the same parts. Learn to tell them apart and the rest is easy.</p>
    <p><b>Short, thick hand</b> = the hour hand.<br><b>Long hand</b> = the minute hand.<br><b>Thin, fast hand</b> (often red) = the second hand.</p>
    <p>The dial has <b>12 numbers</b>. The hour hand needs 12 hours to travel once around. The minute hand goes once around every hour.</p>
-   <div class="callout">Tap the buttons to light up each hand. Then drag the dial and watch how the short hand creeps while the long hand races.</div>`},
- {title:'Reading the Hour',tag:'Short hand first',skin:'pobeda',t:[3,0],fields:['hour','digital'],
+   <div class="callout">Tap the buttons to light up each hand. Then drag the dial: the long hand races while the short hand creeps. One lap of the long hand moves the short hand just one number.</div>`},
+ {title:'Reading the Hour',tag:'Short hand first',skin:'pobeda',t:[3,0],fields:['hour','digital'],ov:'hour',
+  legend:[['#e6c66a','Hour zone: the hour you say']],
   presets:[[2,0],[5,0],[9,0],[11,30],[7,45]],
   html:`<p>Always look at the <b>short hand</b> first. The hour is the number it has <b>just passed</b>.</p>
-   <p>When the long hand points straight up at 12, it is exactly that hour. Short hand on 3 and long hand on 12 = <b>3 o'clock</b>.</p>
-   <div class="callout">Hour hand between 7 and 8? It is still seven-something. The hour changes only when the hand reaches the next number.</div>`},
- {title:'Counting Minutes',tag:'Every number is 5',skin:'poljot',t:[4,25],fields:['minute','digital'],
+   <p>The gold slice on the dial is the <b>hour zone</b>. While the short hand is anywhere inside it, the hour stays the same. Short hand on 3 and long hand on 12 = <b>3 o'clock</b>.</p>
+   <div class="callout">Try 7:45. The short hand is nearly on 8, but it is still inside the 7 zone, so the hour is still <b>7</b>.</div>`},
+ {title:'Counting Minutes',tag:'Every number is 5',skin:'poljot',t:[4,25],fields:['minute','digital'],ov:'minutes',
+  legend:[['#1b1613','Minute ring'],['#f0c4c4','Minutes gone this hour']],
   presets:[[4,5],[4,10],[4,25],[4,40],[4,55]],
-  html:`<p>Now the <b>long hand</b>. Each number on the dial equals <b>five minutes</b>.</p>
-   <p>1 = 5 &nbsp; 2 = 10 &nbsp; 3 = 15 &nbsp; 4 = 20 &nbsp; 5 = 25 &nbsp; 6 = 30 &nbsp; 7 = 35 &nbsp; 8 = 40 &nbsp; 9 = 45 &nbsp; 10 = 50 &nbsp; 11 = 55 &nbsp; 12 = 0</p>
-   <div class="callout">Trick: take the number and multiply by 5. Hand on 7? 7 × 5 = 35 minutes. Small tick marks between the numbers are single minutes.</div>`},
- {title:'Past and To',tag:'Saying it like a human',skin:'slava',t:[8,15],fields:['says','digital'],
+  html:`<p>Now the <b>long hand</b>. Each number on the dial equals <b>five minutes</b>. The dark ring around this watch shows them: 05, 10, 15 … 55.</p>
+   <p>The red shading grows as the long hand travels. A full circle is one hour.</p>
+   <div class="callout">Trick: multiply the number by 5. Hand on 7? 7 × 5 = 35 minutes. The small ticks between numbers are single minutes, so one tick past 7 is 36.</div>`},
+ {title:'Past and To',tag:'Saying it like a human',skin:'slava',t:[8,15],fields:['says','digital'],ov:'halves',
+  legend:[['#b9d0b0','Past side'],['#ecc0c0','To side']],
   presets:[[8,0],[8,15],[8,30],[8,45],[8,20],[8,50]],
-  html:`<p>People rarely say "eight forty". They say it by the <b>half of the dial</b> the long hand is on.</p>
-   <p><b>Right half (1 to 6):</b> minutes <b>past</b> the hour. <b>Left half (7 to 11):</b> minutes <b>to</b> the next hour.</p>
-   <p>Hand on 3 = <b>quarter past</b>. On 6 = <b>half past</b>. On 9 = <b>quarter to</b> the next hour.</p>
-   <div class="callout">Quarter to 9 is 8:45. After half past, the hour you name is the <b>next</b> one.</div>`},
- {title:'24-Hour Time',tag:'Military and polar style',skin:'raketa',t:[5,45],fields:['digital','h24'],ampm:true,
+  html:`<p>People often say "quarter to nine" instead of "eight forty-five". Which word you use depends on <b>which half of the dial</b> the long hand is on.</p>
+   <p><b>Green half (12 down to 6):</b> minutes <b>past</b> the hour. <b>Red half (6 up to 12):</b> minutes <b>to</b> the next hour.</p>
+   <p>Hand on 3 = <b>quarter past</b>. On 6 = <b>half past</b>. On 9 = <b>quarter to</b>.</p>
+   <div class="callout">8:45 is "quarter to <b>nine</b>". Once the long hand crosses into the red half, you name the <b>next</b> hour.</div>`},
+ {title:'24-Hour Time',tag:'Military and polar style',skin:'raketa',t:[5,45],fields:['digital','h24'],ampm:true,ov:'ampm',
   presets:[[1,0],[6,30],[12,0],[5,45],[11,15]],
-  html:`<p>Soviet pilots, soldiers and polar explorers used the <b>24-hour clock</b>. Midnight is 00:00, noon is 12:00, and the afternoon goes on to 13, 14, 15 …</p>
-   <p><b>Afternoon rule:</b> add 12 to the 12-hour time. 5 PM = 17:00. 9 PM = 21:00. Going back? Subtract 12.</p>
-   <p>The red numbers inside the dial of this <b>Raketa</b> show 13 to 24. Flip the switch to see the evening.</p>`},
- {title:'Field Tricks',tag:'What the pros know',skin:'sturm',t:[2,55],fields:['hour','minute','digital'],
+  html:`<p>Soldiers, pilots and polar crews use the <b>24-hour clock</b> so nobody mixes up morning and evening. The day starts at 00:00 (midnight), reaches 12:00 at noon and runs on to 23:59.</p>
+   <p><b>PM rule:</b> add 12. 5 PM = 17:00, 9 PM = 21:00. Going back? Subtract 12.</p>
+   <p><b>The 12 o'clock trap:</b> 12:30 AM is half an hour after midnight, so it is <b>00:30</b>. 12:30 PM is just after noon, so it stays <b>12:30</b>.</p>
+   <p>The red inner numbers on this <b>Raketa</b> show the afternoon hours 13 to 24. Switch between AM and PM below.</p>`},
+ {title:'Field Tricks',tag:'What the pros know',skin:'sturm',t:[2,55],fields:['hour','minute','digital'],ov:'creep',
+  legend:[['#d9a521','Hour hand travel'],['#c8102e','Next number']],
   presets:[[2,55],[6,50],[11,58],[12,2]],
-  html:`<p><b>Near the top of the hour</b> the hour hand sits almost on the next number. At 2:55 it looks like 3, but the long hand on 11 tells the truth: <b>it is not three yet</b>.</p>
-   <p>Rule: <b>minutes decide</b>. If the long hand is on the left half, the hour hand has not arrived yet.</p>
-   <p><b>The crown</b> is the small knob on the side. Pull it out, turn it to move the hands, push it back in. Do not set the time while the second hand is racing past the 12 if you want to be exact.</p>
-   <div class="callout">Tap 2:55, then 11:58 and 12:02. Notice where the short hand is hiding.</div>`},
+  html:`<p><b>Near the top of the hour</b> the short hand sits almost on the next number. At 2:55 it looks like 3, but the long hand on 11 tells the truth: <b>it is not three yet</b>.</p>
+   <p>The gold arc shows how far the short hand has travelled since 2. The red circle marks where it is heading. It only arrives when the long hand reaches 12.</p>
+   <p><b>Rule: the long hand decides.</b> Long hand on the left side of the dial? The short hand has not reached the next number yet.</p>
+   <p><b>The crown</b> is the ridged knob at 3 o'clock. Pull it out, turn it to move the hands, push it back in. Watch the long hand while you turn; the short hand follows on its own.</p>
+   <div class="callout">Tap 2:55, then 11:58 and 12:02. Watch the gold arc almost close, then start again.</div>`},
  {title:'Drill: Generate',tag:'Unlimited practice',drill:true,skin:'vostok',t:[0,0],fields:[],presets:[],html:''}
 ];
 
@@ -430,7 +530,7 @@ const LESSONS=[
 function viewDrill(i,L){
   const v=$('#view');
   const D=S.drill||(S.drill={mode:'d2a',hard:false,ok:0,n:0});
-  v.innerHTML=`<button class="back" id="back">← All missions</button>
+  v.innerHTML=`<button class="back" id="back">← All lessons</button>
    <div class="card"><h2>${i+1}. ${L.title}</h2><p class="sub">${L.tag}</p>
     <div class="chips" id="mode">
       <button class="chip" data-m="d2a">Digital → Analog</button>
@@ -496,7 +596,8 @@ function viewDrill(i,L){
     } else {
       ok=u.h===(tg.h||12)&&u.m===tg.m;
     }
-    if(ok)D.ok++;
+    clk.ov='explain';clk.render();
+    if(ok){D.ok++;burst($('#clk'),8)}
     sc();
     $('#fb').innerHTML=`<div class="fb ${ok?'ok':'no'}"><strong>${ok?'Correct!':'Not quite'}</strong>${ok?phrase(tg.h,tg.m)+'.':explain(tg)}</div>`;
   }
@@ -526,8 +627,27 @@ $('#tabs').addEventListener('click',e=>{
   S.tab=b.dataset.tab;S.lesson=null;if(S.tab!=='quiz')S.q=null;
   go();
 });
+const calm=()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
+function setCompact(on){document.body.classList.toggle('compact',on)}
+// fade each new screen in (only direct children of #view change on a new screen)
+new MutationObserver(()=>{const v=$('#view');v.classList.remove('in');void v.offsetWidth;v.classList.add('in')})
+  .observe($('#view'),{childList:true});
+// little star burst for wins
+function burst(el,n=10){
+  if(!el||calm())return;
+  const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  for(let i=0;i<n;i++){
+    const s=document.createElement('span');s.className='spark';s.textContent='★';
+    s.style.left=cx+'px';s.style.top=cy+'px';document.body.appendChild(s);
+    const a=Math.PI*2*i/n+Math.random()*.4,d=50+Math.random()*50;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{s.style.transform=`translate(${Math.cos(a)*d}px,${Math.sin(a)*d-20}px) rotate(${a*90}deg)`;s.style.opacity='0'}));
+    setTimeout(()=>s.remove(),900);
+  }
+}
+const buzz=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
 function go(){
   clearInterval(S.timer);clearInterval(S.tw);
+  setCompact(S.tab!=='lessons');
   drawTabs();
   ({lessons:viewLessons,bench:viewBench,mission:viewMission,quiz:viewQuiz,watches:viewWatches})[S.tab]();
   window.scrollTo(0,0);
@@ -549,10 +669,13 @@ function readoutHTML(t,fields){
 /* ---------- lessons view ---------- */
 function viewLessons(){
   const v=$('#view');
+  setCompact(S.lesson!=null);
   if(S.lesson==null){
-    v.innerHTML=`<h2>Training missions</h2><p class="sub">Seven short lessons. Do them in order, comrade.</p>`+
-      LESSONS.map((L,i)=>`<button class="mission" data-i="${i}"><span class="no">${i+1}</span><span><b>${L.title}</b><span>${L.tag}</span></span>${S.done[i]?'<span class="tick">✓</span>':''}</button>`).join('')+
-      `<button class="btn block" id="toquiz">Ready? Take the exam</button>`;
+    const nd=LESSONS.filter((_,i)=>S.done[i]).length,nxt=LESSONS.findIndex((_,i)=>!S.done[i]);
+    v.innerHTML=`<h2>Lessons</h2><p class="sub">Seven short lessons. Do them in order, comrade.</p>
+      <div class="meter"><span>${nd}/${LESSONS.length} done</span><span class="bar"><i style="width:${nd/LESSONS.length*100}%"></i></span></div>`+
+      LESSONS.map((L,i)=>`<button class="mission ${i===nxt?'next':''}" data-i="${i}"><span class="no">${i+1}</span><span><b>${L.title}</b><span>${i===nxt?(nd?'Up next · ':'Start here · '):''}${L.tag}</span></span>${S.done[i]?'<span class="tick">✓</span>':''}</button>`).join('')+
+      `<button class="btn block" id="toquiz">${nd===LESSONS.length?'Take the exam':'Ready? Take the exam'}</button>`;
     v.onclick=e=>{
       const m=e.target.closest('.mission');
       if(m){S.lesson=+m.dataset.i;viewLessons()}
@@ -563,10 +686,11 @@ function viewLessons(){
   const i=S.lesson,L=LESSONS[i];
   if(L.drill) return viewDrill(i,L);
   S.pm=false;
-  v.innerHTML=`<button class="back" id="back">← All missions</button>
+  v.innerHTML=`<button class="back" id="back">← All lessons</button>
    <div class="card">
     <h2>${i+1}. ${L.title}</h2><p class="sub">${L.tag}</p>
     <div class="clockbox" id="clk"></div>
+    ${L.legend?`<div class="legend">${L.legend.map(([c,n])=>`<span style="--c:${c}">${n}</span>`).join('')}</div>`:''}
     <div class="chips" id="hlb"></div>
     <div class="readout" id="ro"></div>
     <div class="hint">Drag the dial to move the hands</div>
@@ -574,14 +698,14 @@ function viewLessons(){
    <div class="card lessontext">${L.html}
      <h3>Try these times</h3>
      <div class="chips" id="pre">${L.presets.map(p=>`<button class="chip" data-t="${p[0]*60+p[1]}">${time12(p[0],p[1])}</button>`).join('')}</div>
-     ${L.ampm?`<h3>Day or night?</h3><div class="chips"><button class="chip on" data-pm="0">☀ Morning</button><button class="chip" data-pm="1">☾ Evening</button></div>`:''}
+     ${L.ampm?`<h3>AM or PM?</h3><div class="chips"><button class="chip on" data-pm="0">☀ AM · midnight to noon</button><button class="chip" data-pm="1">☾ PM · noon to midnight</button></div>`:''}
    </div>
    <div class="nav2">
      ${i>0?'<button class="btn alt" id="prev">← Back</button>':''}
      ${i<LESSONS.length-1?'<button class="btn" id="next">Next →</button>':'<button class="btn" id="fin">Done — to the exam</button>'}
    </div>`;
   const ro=$('#ro');
-  const clock=makeClock($('#clk'),{skin:SKINS[L.skin],t:L.t[0]*60+L.t[1],interactive:true,
+  const clock=makeClock($('#clk'),{skin:SKINS[L.skin],t:L.t[0]*60+L.t[1],interactive:true,ov:L.ov,
     onChange:t=>{ro.innerHTML=readoutHTML(t,L.fields)}});
   clock.onChange(clock.t);
   if(L.hlButtons){
@@ -599,7 +723,7 @@ function viewLessons(){
     clock.animateTo(+b.dataset.t);
   };
   v.querySelectorAll('[data-pm]').forEach(b=>b.onclick=()=>{
-    S.pm=b.dataset.pm==='1';
+    S.pm=b.dataset.pm==='1';clock.pm=S.pm;clock.render();
     v.querySelectorAll('[data-pm]').forEach(x=>x.classList.toggle('on',x===b));
     ro.innerHTML=readoutHTML(clock.t,L.fields);
   });
@@ -714,8 +838,14 @@ function buildOptions(q,level){
 }
 function explain(q){
   const {h,m}=q,h12=h||12;
-  const mh=m%5===0?`long hand on ${m/5||12} (${m} minutes)`:`long hand ${m%5} tick${m%5>1?'s':''} past ${Math.floor(m/5)||12} (${m} minutes)`;
-  return `Short hand just passed ${h12}, ${mh}. That is ${time12(h,m)}, "${phrase(h,m).toLowerCase()}".`;
+  const mh=m===0?`<b>long hand</b> on 12, so 0 minutes: exactly on the hour`:m%5===0?`<b>long hand</b> on ${m/5}, so ${m/5} × 5 = ${m} minutes`:`<b>long hand</b> ${m%5} tick${m%5>1?'s':''} past ${Math.floor(m/5)||12}, so ${Math.floor(m/5)*5} + ${m%5} = ${m} minutes`;
+  return `<span class="why">Gold slice: the <b>short hand</b> is in the ${h12} zone. Red line: ${mh}.</span><span class="why">That is <b>${time12(h,m)}</b>, "${phrase(h,m).toLowerCase()}".</span>`;
+}
+function convExplain(H,m,correct){
+  if(H===0) return `00 is the midnight hour, so ${pad(H)}:${pad(m)} is ${correct}.`;
+  if(H<12) return `Before 12:00 it is morning: same hour, add AM. ${pad(H)}:${pad(m)} is ${correct}.`;
+  if(H===12) return `12 is the noon hour: keep 12 and add PM. ${pad(H)}:${pad(m)} is ${correct}.`;
+  return `Afternoon: ${H} − 12 = ${H-12}, add PM. ${pad(H)}:${pad(m)} is ${correct}.`;
 }
 
 function viewQuiz(){
@@ -724,8 +854,8 @@ function viewQuiz(){
     v.innerHTML=`<h2>The exam</h2><p class="sub">Ten questions. Choose your rank of difficulty.</p>`+
       Object.entries(LEVELS).map(([k,L])=>`<button class="mission lvl" data-l="${k}">
         <span><b>${L.ru} · ${L.en}</b><small>${L.desc}</small></span>
-        <span class="tick" style="color:var(--red)">${S.best[k]!=null?S.best[k]+'/10':'▶'}</span></button>`).join('')+
-      `<p class="hint">Best score is saved on this phone</p>`;
+        <span class="tick" style="color:${(S.best[k]||0)>=PASS?'var(--ok)':'var(--red)'}">${S.best[k]!=null?S.best[k]+'/10':'▶'}</span></button>`).join('')+
+      `<p class="hint">Score ${PASS}+ at every rank to open the Mission · best scores stay on this phone</p>`;
     v.onclick=e=>{const b=e.target.closest('[data-l]');if(!b)return;
       S.q={level:b.dataset.l,i:0,score:0,res:[],qs:genQuestions(b.dataset.l),answered:false};viewQuiz()};
     return;
@@ -740,13 +870,15 @@ function viewQuiz(){
       <div class="big">${Q.score}/10</div>
       <p style="margin:16px 0"><span class="stamp">${en}</span></p>
       <p class="sub">${ru}</p>
-      ${!wasOpen&&missionOpen()?'<p><span class="stamp">Mission unlocked</span></p>':''}
-      <p>${Q.score===10?'Perfect. The motherland thanks you.':Q.score>=7?'Solid work. Tighten up the details.':'Back to the lessons, comrade. Then try again.'}</p>
+      ${!wasOpen&&missionOpen()?'<p><span class="stamp late">Mission unlocked</span></p>':''}
+      <p>${Q.score===10?'Perfect. The motherland thanks you.':Q.score>=PASS?'Solid work. Tighten up the details.':`You need ${PASS} to pass this rank. Back to the lessons, comrade, then try again.`}</p>
       <div class="progress">${Q.res.map(r=>`<span class="${r?'ok':'no'}"></span>`).join('')}</div>
+      ${missionOpen()?'':`<p class="hint">Pass all three ranks with ${PASS}+ to open the Mission</p>`}
     </div>
-    <div class="nav2"><button class="btn alt" id="again">Again</button><button class="btn" id="les">Lessons</button></div>`;
+    <div class="nav2"><button class="btn alt" id="again">Again</button><button class="btn" id="les">${!wasOpen&&missionOpen()?'To the mission':'Lessons'}</button></div>`;
+    if(Q.score>=PASS)setTimeout(()=>burst($('.big'),14),300);
     $('#again').onclick=()=>{S.q=null;viewQuiz()};
-    $('#les').onclick=()=>{S.q=null;S.tab='lessons';go()};
+    $('#les').onclick=()=>{S.q=null;S.tab=(!wasOpen&&missionOpen())?'mission':'lessons';go()};
     v.onclick=null;return;
   }
   const q=Q.qs[Q.i],L=LEVELS[Q.level];
@@ -774,7 +906,8 @@ function viewQuiz(){
       clk.interactive=false;
       const set=time12(Math.floor(clk.t/60),Math.round(clk.t)%60);
       feedback(diff<=1,diff<=1?`Exactly ${time12(q.h,q.m)}. ${phrase(q.h,q.m)}.`:`You set ${set}. Target was ${time12(q.h,q.m)}. ${explain(q)}`);
-      clk.hl=null;
+      if(diff<=1)burst($('#clk'),10);
+      clk.ov='explain';
       // show the target
       setTimeout(()=>clk.animateTo(target),350);
     };
@@ -789,13 +922,15 @@ function viewQuiz(){
         :`<div class="clockbox" id="clk"></div>`}
       <div class="opts ${isWord?'one':''}" id="opts">${o.map(x=>`<button class="opt" data-v="${x}">${x}</button>`).join('')}</div>
       <div id="fb"></div></div>`;
-    if(!isConv) makeClock($('#clk'),{skin:q.skin,t:q.h*60+q.m,numerals:L.numerals});
+    const clk=isConv?null:makeClock($('#clk'),{skin:q.skin,t:q.h*60+q.m,numerals:L.numerals});
     $('#opts').onclick=e=>{
       const b=e.target.closest('.opt');if(!b||Q.answered)return;
       const ok=b.dataset.v===correct;
       b.classList.add(ok?'right':'wrong');
       if(!ok)[...$('#opts').children].forEach(x=>{if(x.dataset.v===correct)x.classList.add('right')});
-      feedback(ok,isConv?`${pad(q.h24)}:${pad(q.m)} is ${correct}. ${q.h24>=12?'Afternoon: subtract 12.':'Morning: the same hour.'}`:explain(q));
+      if(clk){clk.ov='explain';clk.render()}
+      if(ok)burst(b,8);
+      feedback(ok,isConv?convExplain(q.h24,q.m,correct):explain(q));
     };
   }
   v.onclick=null;
@@ -883,12 +1018,27 @@ function sceneSVG(stage,strikes,mode){
     <ellipse cx="0" cy="-72" rx="17" ry="4" fill="#111"/><path d="M-9 -73 Q0 -90 9 -73Z" fill="#1b1b18" stroke="#111" stroke-width="1.5"/>
     <rect x="-9" y="-76" width="18" height="3" fill="#c8102e"/>
   </g></g>`;
+  // guard's desk: lamp, papers, a wristwatch left on the blotter
+  const desk=()=>`<g>
+   <rect x="204" y="66" width="62" height="44" fill="#d8cfa8" stroke="#111" stroke-width="2" transform="rotate(-3 235 88)"/>
+   <text x="235" y="80" font-size="7" text-anchor="middle" fill="#c8102e" font-family="'Russo One',sans-serif" transform="rotate(-3 235 88)">ПАТРУЛЬ</text>
+   ${[88,95,102].map(y=>`<line x1="212" y1="${y}" x2="258" y2="${y-2}" stroke="#555" stroke-width="1.2"/>`).join('')}
+   <rect x="196" y="112" width="148" height="10" fill="#6b4a28" stroke="#111" stroke-width="2"/>
+   <rect x="204" y="122" width="8" height="28" fill="#4b3320"/><rect x="328" y="122" width="8" height="28" fill="#4b3320"/>
+   <rect x="300" y="104" width="22" height="8" fill="#1b1613"/><line x1="311" y1="104" x2="300" y2="74" stroke="#1b1613" stroke-width="3"/>
+   <path d="M286 78 L304 64 L316 80Z" fill="#2f4a34" stroke="#111" stroke-width="2"/>
+   <polygon points="292,80 312,80 300,112 270,112" fill="#ffd27a" opacity=".22" class="glow"/>
+   <rect x="232" y="104" width="34" height="7" rx="2" fill="#3a2a18"/>
+   <circle cx="249" cy="104" r="9" fill="#c9a227" stroke="#111" stroke-width="2"/><circle cx="249" cy="104" r="6.5" fill="#f2ead0"/>
+   <line x1="249" y1="104" x2="249" y2="99" stroke="#111" stroke-width="1.6"/><line class="mhand" style="transform-origin:249px 104px;animation-duration:20s" x1="249" y1="104" x2="253" y2="104" stroke="#111" stroke-width="1"/>
+   <rect x="276" y="106" width="14" height="6" fill="#efe7c8" stroke="#111" stroke-width="1"/>
+  </g>`;
   let ax=70;
   if(mode==='win'){ s+=hatch(true); ax=238; }
   else if(stage<=0||stage===4){ s+=radio(stage===4); ax=96; }
   else if(stage===1){ s+=vault(false); ax=96; }
-  else if(stage===2){ s+=board(); }
-  else if(stage===3){ s+=board(); }
+  else if(stage===2){ s+=desk(); ax=150; }
+  else if(stage===3){ s+=desk(); ax=150; }
   else if(stage===5){ s+=hatch(false); ax=170; }
   if(mode==='intro'||mode==='fail') {} 
   if(stage===3&&mode==='play'){
@@ -1013,6 +1163,8 @@ const SCN={
       `The lights cut out. Only your torch. This watch has <b>no numbers</b>, only ticks. Read it.`,
       `Time to report. Say this time over the radio the way an officer would.`,
       `The hatch timer is armed. Set the watch to <b>${time12(q.h,q.m)}</b> to open the exit.`][i],
+    ok:['Code cracked. You know when to move.','The bolts slide back. The vault swings open.','You know the patrol time. You slip past the desk.','Even in the dark you read it right. Keep moving.','Moscow copies. "Good work, KESTREL."','The hatch hisses open. Fresh air.'],
+    bad:['Wrong time. The radio clicks off and a lamp flickers.','The lock buzzes. Somewhere a dog barks.','You misread it. Footsteps in the corridor.','Wrong in the dark. You bump a chair.','Moscow asks you to repeat. Too long on the air.','The timer rejects it. A siren winds up.'],
     winSub:'Dispatch delivered. Moscow is pleased.',failSub:'The guards found you in the bunker.'},
   polyus:{id:'polyus',name:'Polyus',sub:'Polar station N-3',title:'Operation Polyus',alarm:'ШТОРМ',scene:sceneArctic,
     names:['Weather radio','Generator','Station clock','Whiteout','Report to Moscow','Evacuation'],
@@ -1024,6 +1176,8 @@ const SCN={
       `Whiteout. Snow everywhere and <b>no numbers</b> on this dial. Read the ticks.`,
       `Moscow asks for a status. Say the time over the radio the way an officer would.`,
       `The helicopter is inbound. Set the watch to <b>${time12(q.h,q.m)}</b> to fire the landing flares.`][i],
+    ok:['Window logged. You have a plan.','The generator coughs, then roars.','Shift change noted. The crew is ready.','Through the snow, you read it right.','Moscow copies. "Hold on, N-3."','Flares burn red on the ice. Rotors overhead.'],
+    bad:['Wrong window. The wind picks up.','The generator stalls. Lights dim.','Wrong shift. The crew is confused.','The snow fooled you. Visibility drops.','Static. Moscow did not get it.','The flares fizzle. The pilot circles.'],
     winSub:'The helicopter lifts off. You are out.',failSub:'The storm took the station.'},
   express:{id:'express',name:'Express',sub:'Night train 7',title:'Operation Express',alarm:'КОНТРОЛЬ',scene:sceneTrain,
     names:['Telegram','Station clock','Conductor','Tunnel','Report to Moscow','Emergency brake'],
@@ -1031,10 +1185,12 @@ const SCN={
     story:(q,i)=>[
       `A telegram arrives on the platform: <b>"Courier departs at ${pad(q.h24)}:${pad(q.m)}."</b> 24-hour code. Convert it to 12-hour time.`,
       `The station clock decides the departure. Set it to <b>${time12(q.h,q.m)}</b> so the train leaves on time.`,
-      `The conductor checks the timetable. Read his watch to learn how late you are.`,
+      `The conductor checks the timetable against his watch. Read it before he looks your way.`,
       `The train enters a tunnel and the lights flicker. <b>No numbers</b> on this watch. Read the ticks.`,
       `Report to Moscow by radio. Say the time the way an officer would.`,
       `Pull the brake at exactly <b>${time12(q.h,q.m)}</b> to stop the train at the safe house.`][i],
+    ok:['Departure confirmed. You board quietly.','The whistle blows. Right on time.','The conductor nods and moves on.','Out of the tunnel. You read it in the flicker.','Moscow copies. "Courier on schedule."','Brakes scream. The safe house lamp is lit.'],
+    bad:['Wrong time. You nearly miss the train.','The train jolts out late.','The conductor frowns and makes a note.','Wrong in the dark. Someone saw you squint.','Moscow asks you to repeat. Too long on the line.','Wrong moment. The train overshoots the halt.'],
     winSub:'The courier is safe. Moscow is pleased.',failSub:'The inspectors boarded the train.'}
 };
 const PASS=7;
@@ -1047,7 +1203,7 @@ function viewLocked(){
     <div class="hud"><span>ACCESS DENIED</span><span class="lamps">ЗАКРЫТО</span></div>
     <div class="scene"><svg viewBox="0 0 360 200" role="img" aria-label="Locked bunker door">${sceneSVG(1,2,'intro')}<g transform="rotate(-8 180 100)"><rect x="70" y="76" width="220" height="48" fill="#c8102e" opacity=".9" stroke="#111" stroke-width="3"/><text x="180" y="108" font-size="26" text-anchor="middle" fill="#efe3c2" font-family="'Russo One',sans-serif" letter-spacing="3">ЗАКРЫТО</text></g></svg></div>
     <div class="tele"><div class="top">СОВЕРШЕННО СЕКРЕТНО · ACCESS DENIED</div>
-      <p>Agent, you are not cleared for Operation Zarya. Pass the exam at every rank with ${PASS} or more out of 10. Then the bunker doors will open.</p>
+      <p>Agent, you are not cleared for ${SCN[S.sc]?SCN[S.sc].title:'this operation'}. Pass the exam at every rank with ${PASS} or more out of 10. Then the bunker doors will open.</p>
       <p>Go to the exam, comrade. Do it now.</p></div>
     <div class="readout">${rows}</div>
     <button class="btn block" style="margin-top:14px" id="toexam">Go to the exam</button>`;
@@ -1107,6 +1263,7 @@ function viewMission0(){
         <p>${win?(M.strikes===0?'No alarms. A perfect operation.':'Clean exit. Fewer alarms next time earns a higher rank.'):'Review the lessons, then go back in.'}</p>
       </div>
       <div class="nav2"><button class="btn alt" id="again">New mission</button><button class="btn" id="les">Lessons</button></div>`;
+    if(win)setTimeout(()=>burst($('.stamp'),16),450);
     $('#again').onclick=()=>{S.m=null;viewMission();window.scrollTo(0,0)};
     $('#les').onclick=()=>{S.tab='lessons';go()};
     return;
@@ -1119,7 +1276,8 @@ function viewMission0(){
   const feedback=(ok,msg)=>{
     M.answered=true;M.res[i]=ok;if(!ok)M.strikes++;
     const dead=M.strikes>=3;
-    $('#fb').innerHTML=`<div class="fb ${ok?'ok':'no'}"><strong>${ok?'Clear':'Alarm!'}</strong>${msg}</div>
+    if(ok)burst($('.scene'),8);else buzz(dead?[120,80,120,80,300]:[90,60,140]);
+    $('#fb').innerHTML=`<div class="fb ${ok?'ok':'no'}"><strong>${ok?'Clear':'Alarm!'}</strong><i style="font-style:italic;display:block;margin-bottom:4px">${(ok?K.ok:K.bad)[i]}</i>${msg}</div>
       <button class="btn block" style="margin-top:12px" id="nx">${dead?'Caught...':i===5?'Complete the mission':'Next checkpoint'}</button>`;
     $('#nx').onclick=()=>{if(dead)M.over='fail';else if(i===5)M.over='win';else M.i++;viewMission();window.scrollTo(0,0)};
     $('#nx').scrollIntoView({block:'nearest'});
@@ -1137,6 +1295,7 @@ function viewMission0(){
       const diff=Math.abs(((Math.round(clk.t)-target+360)%720)-360);
       clk.interactive=false;
       feedback(diff<=1,diff<=1?`Exactly ${time12(q.h,q.m)}. ${phrase(q.h,q.m)}.`:`Target was ${time12(q.h,q.m)}. ${explain(q)}`);
+      clk.ov='explain';
       setTimeout(()=>clk.animateTo(target),350);
     };
   } else {
@@ -1147,13 +1306,14 @@ function viewMission0(){
       ${isConv?`<div class="lcd">${pad(q.h24)}:${pad(q.m)}</div><p class="hint">Radio · 24-hour</p>`:`<div class="clockbox" id="clk"></div>`}
       <div class="opts ${isWord?'one':''}" id="opts">${o.map(x=>`<button class="opt" data-v="${x}">${x}</button>`).join('')}</div>
       <div id="fb"></div></div>`;
-    if(!isConv) makeClock($('#clk'),{skin:q.skin,t:q.h*60+q.m,numerals:q.nums});
+    const clk=isConv?null:makeClock($('#clk'),{skin:q.skin,t:q.h*60+q.m,numerals:q.nums});
     $('#opts').onclick=e=>{
       const b=e.target.closest('.opt');if(!b||M.answered)return;
       const ok=b.dataset.v===correct;
       b.classList.add(ok?'right':'wrong');
       if(!ok)[...$('#opts').children].forEach(x=>{if(x.dataset.v===correct)x.classList.add('right')});
-      feedback(ok,isConv?`${pad(q.h24)}:${pad(q.m)} is ${correct}. ${q.h24>=12?'Afternoon: subtract 12.':''}`:explain(q));
+      if(clk){clk.ov='explain';clk.render()}
+      feedback(ok,isConv?convExplain(q.h24,q.m,correct):explain(q));
     };
   }
 }
