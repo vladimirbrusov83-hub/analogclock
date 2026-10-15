@@ -13,7 +13,7 @@
 <link rel="manifest" id="manifestLink" href="">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Russo+One&family=Black+Ops+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Russo+One&family=Black+Ops+One&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
 :root{
   --red:#c8102e; --red-d:#8f0b20; --cream:#e4dcb6; --paper:#bdb98f;
@@ -144,6 +144,27 @@ button{font:inherit;cursor:pointer;color:inherit}
 .wcard h3{margin:0 0 4px;color:var(--ink)}
 .wcard p{margin:0;font-size:15px}
 .wcard small{color:var(--red-d);font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+/* mission */
+.scene{border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);background:#111;margin:0 0 14px;overflow:hidden}
+.scene svg{display:block;width:100%;height:auto}
+.hud{display:flex;justify-content:space-between;align-items:center;background:var(--ink);color:var(--cream);
+  padding:7px 10px;font:400 12px var(--head);letter-spacing:.1em;margin-top:6px}
+.lamps{display:flex;gap:6px;align-items:center;color:var(--gold)}
+.lamps i{width:14px;height:14px;border-radius:50%;background:#3a2a28;border:2px solid #000}
+.lamps i.on{background:#ff3b2f;box-shadow:0 0 8px #ff3b2f}
+.hud+.scene{margin-top:0;border-top:0}
+.tele{font-family:'Special Elite','Courier New',monospace;background:#efe7c8;border:2px dashed var(--ink);
+  padding:10px 12px;margin:0 0 14px;font-size:15px;line-height:1.4;color:#2a2318}
+.tele p{margin:0 0 8px}.tele p:last-child{margin:0}
+.tele .top{color:var(--red);font:400 12px var(--head);letter-spacing:.12em;margin-bottom:6px}
+@keyframes flash{50%{opacity:.2}}
+.flash{animation:flash .8s steps(2) infinite}
+@keyframes wave{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
+.w1{animation:wave 1.2s infinite}.w2{animation:wave 1.2s .2s infinite}.w3{animation:wave 1.2s .4s infinite}
+@keyframes needle{0%,100%{transform:translateX(0)}50%{transform:translateX(34px)}}
+.needle{animation:needle 4s ease-in-out infinite}
+nav button[data-tab=mission]{background:var(--olive-l)}
+nav button[data-tab=mission].on{background:var(--red)}
 
 nav{
   position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--ink);
@@ -155,7 +176,7 @@ nav button{
   flex:1;background:none;border:0;color:var(--cream);padding:9px 2px 8px;
   display:flex;flex-direction:column;align-items:center;gap:1px;min-height:62px;
 }
-nav button small{font:400 10px var(--head);letter-spacing:.1em;color:var(--gold)}
+nav button small{font:400 9px var(--head);letter-spacing:.04em;color:var(--gold)}
 nav button span{font:500 15px var(--body);text-transform:uppercase;letter-spacing:.06em}
 nav button.on{background:var(--red)}
 nav button.on small{color:var(--cream)}
@@ -458,9 +479,9 @@ function viewDrill(i,L){
 
 /* ---------- state ---------- */
 const S={tab:'lessons',lesson:null,done:store('done')||{},best:store('best')||{},pm:false,
-  q:null,wsk:'vostok',live:true,timer:0,lessonClock:null};
+  q:null,wsk:'vostok',live:true,timer:0,lessonClock:null,m:null,mbest:store('mbest')};
 
-const TABS=[['lessons','УРОКИ','Lessons'],['bench','МАСТЕРСКАЯ','Workshop'],['quiz','ЭКЗАМЕН','Quiz'],['watches','ЧАСЫ','Watches']];
+const TABS=[['lessons','УРОКИ','Lessons'],['bench','МАСТЕРСКАЯ','Workshop'],['mission','МИССИЯ','Mission'],['quiz','ЭКЗАМЕН','Quiz'],['watches','ЧАСЫ','Watches']];
 function drawTabs(){
   $('#tabs').innerHTML=TABS.map(([id,ru,en])=>`<button data-tab="${id}" class="${S.tab===id?'on':''}"><small>${ru}</small><span>${en}</span></button>`).join('');
 }
@@ -472,7 +493,7 @@ $('#tabs').addEventListener('click',e=>{
 function go(){
   clearInterval(S.timer);
   drawTabs();
-  ({lessons:viewLessons,bench:viewBench,quiz:viewQuiz,watches:viewWatches})[S.tab]();
+  ({lessons:viewLessons,bench:viewBench,mission:viewMission,quiz:viewQuiz,watches:viewWatches})[S.tab]();
   window.scrollTo(0,0);
 }
 
@@ -740,6 +761,192 @@ function viewQuiz(){
     };
   }
   v.onclick=null;
+}
+
+/* ---------- mission ---------- */
+const M_NAMES=['Radio intercept','Vault door',"Guard's watch",'Blackout','Report to Moscow','Exfiltration'];
+function newMission(){
+  const h24=13+Math.floor(Math.random()*9),m=5*Math.floor(Math.random()*12);
+  const r5=()=>5*Math.floor(Math.random()*12),rh=()=>Math.floor(Math.random()*12),r60=()=>Math.floor(Math.random()*60);
+  return {i:-1,strikes:0,over:null,answered:false,res:[],qs:[
+    {type:'convert',h24,m,h:h24%12},
+    {type:'set',h:h24%12,m,skin:SKINS.poljot,nums:'all'},
+    {type:'read',h:rh(),m:r5(),skin:pick(SKIN_LIST),nums:null,level:'officer'},
+    {type:'read',h:rh(),m:r60(),skin:SKINS.sturm,nums:'none',level:'general'},
+    {type:'word',h:rh(),m:r5(),skin:SKINS.vostok,nums:null,level:'officer'},
+    {type:'set',h:rh(),m:r60(),skin:SKINS.raketa,nums:null}
+  ]};
+}
+function sceneSVG(stage,strikes,mode){
+  const alarm=mode==='fail'||strikes>=2;
+  const lamp=alarm?'#ff3b2f':strikes===1?'#ffb347':'#ffd27a';
+  let s='<rect width="360" height="200" fill="#2b2e28"/>';
+  for(let x=0;x<=360;x+=60) s+=`<line x1="${x}" y1="0" x2="${x}" y2="150" stroke="#1f211c" stroke-width="2"/>`;
+  for(let x=30;x<360;x+=60) for(const y of [70,125]) s+=`<circle cx="${x}" cy="${y}" r="1.8" fill="#14150f"/>`;
+  s+='<rect y="16" width="360" height="9" fill="#4d5148" stroke="#111" stroke-width="1.5"/><rect y="30" width="360" height="5" fill="#40443c" stroke="#111" stroke-width="1"/>';
+  s+='<rect y="150" width="360" height="50" fill="#1c1e1a"/>';
+  for(let x=0;x<360;x+=24) s+=`<rect x="${x}" y="150" width="12" height="5" fill="#d9a521"/><rect x="${x+12}" y="150" width="12" height="5" fill="#111"/>`;
+  // banner
+  s+=`<rect x="16" y="42" width="34" height="46" fill="#c8102e" stroke="#111" stroke-width="2"/><polygon points="${starPts(10,4,33,62)}" fill="#f2c230"/>`;
+  // lamp + glow
+  s+=`<polygon points="170,56 190,56 250,150 110,150" fill="${lamp}" opacity=".16"${alarm?' class="flash"':''}/>`;
+  s+=`<line x1="180" y1="35" x2="180" y2="44" stroke="#111" stroke-width="2"/><path d="M164 58 L196 58 L188 44 L172 44Z" fill="#222" stroke="#111" stroke-width="2"/><ellipse cx="180" cy="58" rx="10" ry="3" fill="${lamp}"${alarm?' class="flash"':''}/>`;
+  const radio=mic=>`<g>
+   <rect x="196" y="128" width="148" height="8" fill="#6b4a28" stroke="#111" stroke-width="2"/>
+   <rect x="204" y="136" width="6" height="14" fill="#4b3320"/><rect x="330" y="136" width="6" height="14" fill="#4b3320"/>
+   <rect x="206" y="84" width="118" height="44" rx="3" fill="#56633f" stroke="#111" stroke-width="3"/>
+   <circle cx="236" cy="108" r="16" fill="#2a3020" stroke="#111" stroke-width="2"/>
+   <circle cx="236" cy="108" r="10" fill="none" stroke="#6f7d55" stroke-width="2"/><circle cx="236" cy="108" r="4" fill="none" stroke="#6f7d55" stroke-width="2"/>
+   <rect x="262" y="92" width="52" height="14" fill="#e4dcb6" stroke="#111" stroke-width="2"/>
+   <g class="needle"><line x1="266" y1="93" x2="266" y2="105" stroke="#c8102e" stroke-width="2"/></g>
+   <circle cx="276" cy="118" r="6" fill="#222" stroke="#111" stroke-width="2"/><circle cx="300" cy="118" r="6" fill="#222" stroke="#111" stroke-width="2"/>
+   <line x1="276" y1="118" x2="276" y2="113" stroke="#e4dcb6" stroke-width="2"/><line x1="300" y1="118" x2="304" y2="115" stroke="#e4dcb6" stroke-width="2"/>
+   <circle cx="214" cy="93" r="3" fill="#ff3b2f" class="flash"/>
+   <line x1="316" y1="84" x2="338" y2="30" stroke="#111" stroke-width="2"/><circle cx="338" cy="30" r="3" fill="#111"/>
+   <path class="w1" d="M226 78 Q236 70 246 78" fill="none" stroke="#ffd27a" stroke-width="2"/>
+   <path class="w2" d="M222 70 Q236 58 250 70" fill="none" stroke="#ffd27a" stroke-width="2"/>
+   <path class="w3" d="M218 62 Q236 46 254 62" fill="none" stroke="#ffd27a" stroke-width="2"/>
+   ${mic?'<rect x="184" y="108" width="4" height="20" fill="#111"/><rect x="178" y="94" width="16" height="16" rx="6" fill="#333" stroke="#111" stroke-width="2"/>':'<path d="M212 128 q-8 -14 -2 -24 q6 -6 10 0" fill="none" stroke="#111" stroke-width="3"/>'}
+  </g>`;
+  const vault=open=>{
+    let g='<circle cx="268" cy="92" r="58" fill="#4a4f45" stroke="#111" stroke-width="4"/><circle cx="268" cy="92" r="46" fill="#5d6356" stroke="#111" stroke-width="2"/>';
+    for(let i=0;i<8;i++){const a=i*Math.PI/4;g+=`<circle cx="${(268+52*Math.cos(a)).toFixed(1)}" cy="${(92+52*Math.sin(a)).toFixed(1)}" r="3.5" fill="#2a2d27" stroke="#111"/>`}
+    g+=`<g transform="rotate(${open?60:0} 268 92)">`;
+    for(let a=0;a<360;a+=60) g+=`<line x1="268" y1="92" x2="268" y2="62" stroke="#111" stroke-width="5" transform="rotate(${a} 268 92)"/><circle cx="268" cy="60" r="4" fill="#111" transform="rotate(${a} 268 92)"/>`;
+    g+='<circle cx="268" cy="92" r="12" fill="#3b3f37" stroke="#111" stroke-width="2"/></g>';
+    g+=`<rect x="322" y="68" width="24" height="34" fill="#222" stroke="#111" stroke-width="2"/><circle cx="334" cy="78" r="5" fill="${open?'#59d35a':'#ff3b2f'}"/><rect x="327" y="88" width="14" height="8" fill="#555"/>`;
+    return `<g>${g}</g>`;
+  };
+  const board=()=>`<g>
+   <rect x="196" y="48" width="144" height="82" fill="#1f2d24" stroke="#6b4a28" stroke-width="5"/>
+   <text x="268" y="68" font-size="11" text-anchor="middle" fill="#e4dcb6" font-family="'Russo One',sans-serif" letter-spacing="2">ГРАФИК</text>
+   ${[80,92,104,116].map((y,i)=>`<line x1="210" y1="${y}" x2="${300+i*8}" y2="${y}" stroke="#e4dcb6" stroke-width="1.5" stroke-dasharray="${3+i} 3" opacity=".8"/>`).join('')}
+   <circle cx="320" cy="102" r="9" fill="#e4dcb6" stroke="#111" stroke-width="2"/><line x1="320" y1="102" x2="320" y2="96" stroke="#111" stroke-width="1.5"/><line x1="320" y1="102" x2="325" y2="104" stroke="#111" stroke-width="1.5"/>
+  </g>`;
+  const hatch=open=>{
+    let g='<rect x="222" y="40" width="3" height="110" fill="#333"/><rect x="250" y="40" width="3" height="110" fill="#333"/>';
+    for(let y=52;y<150;y+=14) g+=`<rect x="222" y="${y}" width="31" height="3" fill="#555"/>`;
+    g+=`<rect x="206" y="24" width="64" height="16" fill="#4a4f45" stroke="#111" stroke-width="2.5" transform="${open?'rotate(-35 206 32)':''}"/>`;
+    if(open) g+='<polygon points="214,40 262,40 300,150 190,150" fill="#fff6c0" opacity=".28"/>';
+    g+='<rect x="296" y="48" width="52" height="18" fill="#d9a521" stroke="#111" stroke-width="2"/><text x="322" y="61" font-size="10" text-anchor="middle" font-family="\'Russo One\',sans-serif" fill="#111">ВЫХОД</text>';
+    g+=`<rect x="296" y="76" width="52" height="30" fill="#111" stroke="#555" stroke-width="2"/><text x="322" y="95" font-size="13" text-anchor="middle" font-family="'Russo One',monospace" fill="${open?'#59d35a':'#ff3b2f'}">${open?'OPEN':'LOCK'}</text>`;
+    return `<g>${g}</g>`;
+  };
+  const agent=x=>`<g transform="translate(${x} 150)">
+    <ellipse cx="0" cy="2" rx="22" ry="4" fill="#000" opacity=".5"/>
+    <rect x="-9" y="-14" width="7" height="16" fill="#0d0d0b"/><rect x="2" y="-14" width="7" height="16" fill="#0d0d0b"/>
+    <path d="M-17 -10 L-13 -54 Q0 -62 13 -54 L17 -10 Z" fill="#4a4a36" stroke="#111" stroke-width="2.5"/>
+    <line x1="0" y1="-52" x2="0" y2="-10" stroke="#111" stroke-width="1.5"/><rect x="-13" y="-30" width="26" height="4" fill="#2c2c20"/>
+    <path d="M-10 -56 L0 -46 L10 -56 L7 -62 L0 -54 L-7 -62Z" fill="#2c2c20" stroke="#111" stroke-width="1.5"/>
+    <circle cx="0" cy="-68" r="8" fill="#c9a07a" stroke="#111" stroke-width="2"/>
+    <ellipse cx="0" cy="-72" rx="17" ry="4" fill="#111"/><path d="M-9 -73 Q0 -90 9 -73Z" fill="#1b1b18" stroke="#111" stroke-width="1.5"/>
+    <rect x="-9" y="-76" width="18" height="3" fill="#c8102e"/>
+  </g>`;
+  let ax=70;
+  if(mode==='win'){ s+=hatch(true); ax=238; }
+  else if(stage<=0||stage===4){ s+=radio(stage===4); ax=96; }
+  else if(stage===1){ s+=vault(false); ax=96; }
+  else if(stage===2){ s+=board(); }
+  else if(stage===3){ s+=board(); }
+  else if(stage===5){ s+=hatch(false); ax=170; }
+  if(mode==='intro'||mode==='fail') {} 
+  if(stage===3&&mode==='play'){
+    s+='<rect width="360" height="200" fill="#000" opacity=".62"/>';
+    s+='<polygon points="86,92 200,52 330,70 330,150 200,150" fill="#fff6c0" opacity=".2"/>';
+  }
+  s+=agent(ax);
+  if(mode==='fail'){
+    s+='<rect width="360" height="200" fill="#ff0000" opacity=".2" class="flash"/>';
+    s+='<polygon points="360,0 300,0 180,150 260,150" fill="#fff6c0" opacity=".15"/>';
+  }
+  return s;
+}
+function viewMission(){
+  const v=$('#view');
+  const M=S.m;
+  const scene=(st,mode)=>`<div class="scene"><svg viewBox="0 0 360 200" role="img" aria-label="Soviet bunker scene">${sceneSVG(st,M?M.strikes:0,mode)}</svg></div>`;
+  const hud=(label)=>`<div class="hud"><span>${label}</span><span class="lamps">ТРЕВОГА ${[0,1,2].map(i=>`<i class="${M&&i<M.strikes?'on':''}"></i>`).join('')}</span></div>`;
+  v.onclick=null;
+  if(!M){
+    v.innerHTML=`<h2>Operation Zarya</h2><p class="sub">Agent KESTREL · bunker K-7</p>
+      ${hud('BRIEFING')}${scene(0,'intro')}
+      <div class="tele"><div class="top">СОВЕРШЕННО СЕКРЕТНО · TOP SECRET</div>
+        <p><b>Agent KESTREL.</b> A dispatch for Moscow Centre sits deep in bunker K-7. The radio will give you times. The clocks will give you doors.</p>
+        <p>Six checkpoints. Three alarms and the guards find you. Read every clock like a professional.</p>
+        ${S.mbest!=null?`<p>Best run: <b>${S.mbest} alarm${S.mbest===1?'':'s'}</b></p>`:''}
+      </div>
+      <button class="btn block" id="go">Accept mission</button>`;
+    $('#go').onclick=()=>{S.m=newMission();S.m.i=0;viewMission();window.scrollTo(0,0)};
+    return;
+  }
+  if(M.over){
+    const win=M.over==='win';
+    const rk=!win?['Captured','Схвачен']:M.strikes===0?['Colonel','Полковник']:M.strikes===1?['Major','Майор']:['Lieutenant','Лейтенант'];
+    if(win&&(S.mbest==null||M.strikes<S.mbest)){S.mbest=M.strikes;store('mbest',S.mbest)}
+    v.innerHTML=`<h2>${win?'Mission complete':'Mission failed'}</h2><p class="sub">${win?'Dispatch delivered. Moscow is pleased.':'The guards found you in the bunker.'}</p>
+      ${hud(win?'DEBRIEF':'ALARM')}${scene(5,win?'win':'fail')}
+      <div class="card" style="text-align:center">
+        <p style="margin:6px 0 14px"><span class="stamp">${rk[0]}</span></p>
+        <p class="sub">${rk[1]} · ${M.strikes} alarm${M.strikes===1?'':'s'}</p>
+        <p>${win?(M.strikes===0?'No alarms. A perfect operation.':'Clean exit. Fewer alarms next time earns a higher rank.'):'Review the lessons, then go back in.'}</p>
+      </div>
+      <div class="nav2"><button class="btn alt" id="again">New mission</button><button class="btn" id="les">Lessons</button></div>`;
+    $('#again').onclick=()=>{S.m=null;viewMission();window.scrollTo(0,0)};
+    $('#les').onclick=()=>{S.tab='lessons';go()};
+    return;
+  }
+  const i=M.i,q=M.qs[i];
+  M.answered=false;
+  const prog=`<div class="progress">${M.qs.map((_,k)=>`<span class="${k<i?(M.res[k]?'ok':'no'):k===i?'now':''}"></span>`).join('')}</div>`;
+  const story=[
+    `Static, then a voice from Moscow Centre: <b>"Meeting at ${pad(q.h24)}:${pad(q.m)}."</b> It is 24-hour code. Convert it to 12-hour time.`,
+    `The vault door has a clock lock. Set the watch to the meeting time, <b>${time12(q.h,q.m)}</b>, to open it.`,
+    `Inside, a guard's watch lies on the desk. Read it to learn when the patrol is back.`,
+    `The lights cut out. Only your torch. This watch has <b>no numbers</b>, only ticks. Read it.`,
+    `Time to report. Say this time over the radio the way an officer would.`,
+    `The hatch timer is armed. Set the watch to <b>${time12(q.h,q.m)}</b> to open the exit.`
+  ][i];
+  const prompt=q.type==='convert'?'Convert to 12-hour time':q.type==='set'?`Set the watch to ${time12(q.h,q.m)}`:q.type==='word'?'How do you report this time?':'What time does the watch show?';
+  const head=`<div class="tele"><div class="top">STAGE ${i+1}/6 · ${M_NAMES[i].toUpperCase()}</div><p>${story}</p></div>`;
+  const feedback=(ok,msg)=>{
+    M.answered=true;M.res[i]=ok;if(!ok)M.strikes++;
+    const dead=M.strikes>=3;
+    $('#fb').innerHTML=`<div class="fb ${ok?'ok':'no'}"><strong>${ok?'Clear':'Alarm!'}</strong>${msg}</div>
+      <button class="btn block" style="margin-top:12px" id="nx">${dead?'Guards approach...':i===5?'Open the hatch':'Next checkpoint'}</button>`;
+    $('#nx').onclick=()=>{if(dead)M.over='fail';else if(i===5)M.over='win';else M.i++;viewMission();window.scrollTo(0,0)};
+    $('#nx').scrollIntoView({block:'nearest'});
+    $('.lamps').innerHTML='ТРЕВОГА '+[0,1,2].map(k=>`<i class="${k<M.strikes?'on':''}"></i>`).join('');
+  };
+  if(q.type==='set'){
+    const target=q.h*60+q.m;
+    let start;do{start=Math.floor(Math.random()*720)}while(Math.abs(((start-target+360)%720)-360)<40);
+    v.innerHTML=`${hud('CHECKPOINT '+(i+1))}${scene(i,'play')}${prog}${head}
+      <div class="card"><p class="prompt">${prompt}</p><div class="clockbox" id="clk"></div><div class="hint">Drag the dial</div>
+      <div id="fb"><button class="btn block" style="margin-top:12px" id="rep">Report</button></div></div>`;
+    const clk=makeClock($('#clk'),{skin:q.skin,t:start,numerals:q.nums,interactive:true});
+    $('#rep').onclick=()=>{
+      const diff=Math.abs(((Math.round(clk.t)-target+360)%720)-360);
+      clk.interactive=false;
+      feedback(diff<=1,diff<=1?`Exactly ${time12(q.h,q.m)}. ${phrase(q.h,q.m)}.`:`Target was ${time12(q.h,q.m)}. ${explain(q)}`);
+      setTimeout(()=>clk.animateTo(target),350);
+    };
+  } else {
+    const {correct,opts}=buildOptions(q,q.level||'cadet');
+    const o=shuffle(opts),isWord=q.type==='word',isConv=q.type==='convert';
+    v.innerHTML=`${hud('CHECKPOINT '+(i+1))}${scene(i,'play')}${prog}${head}
+      <div class="card"><p class="prompt">${prompt}</p>
+      ${isConv?`<div class="lcd">${pad(q.h24)}:${pad(q.m)}</div><p class="hint">Radio · 24-hour</p>`:`<div class="clockbox" id="clk"></div>`}
+      <div class="opts ${isWord?'one':''}" id="opts">${o.map(x=>`<button class="opt" data-v="${x}">${x}</button>`).join('')}</div>
+      <div id="fb"></div></div>`;
+    if(!isConv) makeClock($('#clk'),{skin:q.skin,t:q.h*60+q.m,numerals:q.nums});
+    $('#opts').onclick=e=>{
+      const b=e.target.closest('.opt');if(!b||M.answered)return;
+      const ok=b.dataset.v===correct;
+      b.classList.add(ok?'right':'wrong');
+      if(!ok)[...$('#opts').children].forEach(x=>{if(x.dataset.v===correct)x.classList.add('right')});
+      feedback(ok,isConv?`${pad(q.h24)}:${pad(q.m)} is ${correct}. ${q.h24>=12?'Afternoon: subtract 12.':''}`:explain(q));
+    };
+  }
 }
 
 /* ---------- install bits: icon + manifest ---------- */
