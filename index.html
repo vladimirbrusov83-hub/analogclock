@@ -519,7 +519,7 @@ const S={tab:'lessons',lesson:null,done:store('done')||{},best:store('best')||{}
 
 const TABS=[['lessons','УРОКИ','Lessons'],['bench','МАСТЕРСКАЯ','Workshop'],['mission','МИССИЯ','Mission'],['quiz','ЭКЗАМЕН','Quiz'],['watches','ЧАСЫ','Watches']];
 function drawTabs(){
-  $('#tabs').innerHTML=TABS.map(([id,ru,en])=>`<button data-tab="${id}" class="${S.tab===id?'on':''}"><small>${ru}</small><span>${en}</span></button>`).join('');
+  $('#tabs').innerHTML=TABS.map(([id,ru,en])=>(id==='mission'&&!missionOpen())?[id,'ЗАКРЫТО',en]:[id,ru,en]).map(([id,ru,en])=>`<button data-tab="${id}" class="${S.tab===id?'on':''}"><small>${ru}</small><span>${en}</span></button>`).join('');
 }
 $('#tabs').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
@@ -733,12 +733,14 @@ function viewQuiz(){
   const Q=S.q;
   if(Q.i>=Q.qs.length){
     const [,en,ru]=rankOf(Q.score);
+    const wasOpen=missionOpen();
     if(S.best[Q.level]==null||Q.score>S.best[Q.level]){S.best[Q.level]=Q.score;store('best',S.best)}
     v.innerHTML=`<div class="card" style="text-align:center">
       <p class="sub">${LEVELS[Q.level].ru} · ${LEVELS[Q.level].en}</p>
       <div class="big">${Q.score}/10</div>
       <p style="margin:16px 0"><span class="stamp">${en}</span></p>
       <p class="sub">${ru}</p>
+      ${!wasOpen&&missionOpen()?'<p><span class="stamp">Mission unlocked</span></p>':''}
       <p>${Q.score===10?'Perfect. The motherland thanks you.':Q.score>=7?'Solid work. Tighten up the details.':'Back to the lessons, comrade. Then try again.'}</p>
       <div class="progress">${Q.res.map(r=>`<span class="${r?'ok':'no'}"></span>`).join('')}</div>
     </div>
@@ -1035,7 +1037,24 @@ const SCN={
       `Pull the brake at exactly <b>${time12(q.h,q.m)}</b> to stop the train at the safe house.`][i],
     winSub:'The courier is safe. Moscow is pleased.',failSub:'The inspectors boarded the train.'}
 };
-function viewMission(){viewMission0();typewrite()}
+const PASS=7;
+const missionOpen=()=>Object.keys(LEVELS).every(k=>(S.best[k]||0)>=PASS);
+function viewLocked(){
+  const v=$('#view');
+  const rows=Object.entries(LEVELS).map(([k,L])=>{const b=S.best[k],ok=(b||0)>=PASS;
+    return `<div><i>${L.ru} · ${L.en}</i><b>${b==null?'not taken':b+'/10'} ${ok?'✓':'✕'}</b></div>`}).join('');
+  v.innerHTML=`<h2>Mission closed</h2><p class="sub">Clearance not granted</p>
+    <div class="hud"><span>ACCESS DENIED</span><span class="lamps">ЗАКРЫТО</span></div>
+    <div class="scene"><svg viewBox="0 0 360 200" role="img" aria-label="Locked bunker door">${sceneSVG(1,2,'intro')}<g transform="rotate(-8 180 100)"><rect x="70" y="76" width="220" height="48" fill="#c8102e" opacity=".9" stroke="#111" stroke-width="3"/><text x="180" y="108" font-size="26" text-anchor="middle" fill="#efe3c2" font-family="'Russo One',sans-serif" letter-spacing="3">ЗАКРЫТО</text></g></svg></div>
+    <div class="tele"><div class="top">СОВЕРШЕННО СЕКРЕТНО · ACCESS DENIED</div>
+      <p>Agent, you are not cleared for Operation Zarya. Pass the exam at every rank with ${PASS} or more out of 10. Then the bunker doors will open.</p>
+      <p>Go to the exam, comrade. Do it now.</p></div>
+    <div class="readout">${rows}</div>
+    <button class="btn block" style="margin-top:14px" id="toexam">Go to the exam</button>`;
+  $('#toexam').onclick=()=>{S.tab='quiz';go()};
+  v.onclick=null;
+}
+function viewMission(){if(!missionOpen()){viewLocked()}else{viewMission0()}typewrite()}
 function typewrite(){
   clearInterval(S.tw);
   const box=document.querySelector('.tele');if(!box)return;
