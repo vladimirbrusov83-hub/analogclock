@@ -245,6 +245,16 @@ body.compact header .flag{width:58px;top:calc(10px + env(safe-area-inset-top))}
 .meter .bar i{display:block;height:100%;background:var(--ok)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;margin-top:8px;font:500 13px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .legend span::before{content:"";display:inline-block;width:12px;height:12px;border:2px solid var(--ink);margin-right:6px;vertical-align:-2px;background:var(--c)}
+/* 2-day plan + lesson extras */
+.plan h3{margin-top:0}
+.plan .day{display:flex;flex-direction:column;border-left:5px solid var(--red);padding:4px 0 4px 10px;margin:8px 0}
+.plan .day b{font:400 15px var(--head);text-transform:uppercase;letter-spacing:.04em}
+.plan .day span{font-size:15px}
+.plan details{border-top:2px dashed var(--ink);margin-top:10px;padding-top:8px}
+.plan summary{font:400 15px var(--head);text-transform:uppercase;color:var(--red-d);cursor:pointer;padding:6px 0;min-height:32px}
+.plan ol{margin:6px 0;padding-left:22px}.plan li{margin:4px 0}.plan details p{margin:6px 0 0;font-size:15px}
+.callout.oops{background:#f3d9cf}.callout.oops::before{content:"!";font:400 18px var(--head);top:6px}
+.jump{color:var(--red-d);font-weight:500;white-space:nowrap}
 .fb .why{display:block;margin-top:6px;font-weight:400}
 @media (max-width:380px){
   header h1{font-size:32px} .opt{font-size:18px} .lcd{font-size:44px}
@@ -484,47 +494,121 @@ function makeClock(host,opt){
 
 /* ---------- lessons ---------- */
 const LESSONS=[
- {title:'Meet the Dial',tag:'The three hands',skin:'poljot',t:[10,10],fields:['digital'],hlButtons:true,
+ {title:'Meet the Dial',tag:'The three hands',min:6,skin:'poljot',t:[10,10],fields:['digital'],hlButtons:true,
   presets:[[3,0],[6,0],[9,15],[12,30]],
-  html:`<p>Every analog watch has the same parts. Learn to tell them apart and the rest is easy.</p>
-   <p><b>Short, thick hand</b> = the hour hand.<br><b>Long hand</b> = the minute hand.<br><b>Thin, fast hand</b> (often red) = the second hand.</p>
-   <p>The dial has <b>12 numbers</b>. The hour hand needs 12 hours to travel once around. The minute hand goes once around every hour.</p>
-   <div class="callout">Tap the buttons to light up each hand. Then drag the dial: the long hand races while the short hand creeps. One lap of the long hand moves the short hand just one number.</div>`},
- {title:'Reading the Hour',tag:'Short hand first',skin:'pobeda',t:[3,0],fields:['hour','digital'],ov:'hour',
+  html:`<p>Every analog watch works the same way. Learn the three hands and the rest is easy.</p>
+   <p><b>Short, thick hand</b> = hours.<br><b>Long hand</b> = minutes.<br><b>Thin hand</b> (often red) = seconds. You can ignore it when telling the time.</p>
+   <p>The long hand goes around once every hour. In that hour the short hand moves just <b>one number</b>.</p>
+   <div class="callout">Tap the buttons to light up each hand. Then drag the dial: the long hand races, the short hand creeps.</div>`,
+  oops:`Mixing up the hands. If both look long, the <b>shorter</b> one is always the hour.`},
+ {title:'Reading the Hour',tag:'Short hand first',min:8,skin:'pobeda',t:[3,0],fields:['hour','digital'],ov:'hour',
   legend:[['#e6c66a','Hour zone: the hour you say']],
   presets:[[2,0],[5,0],[9,0],[11,30],[7,45]],
   html:`<p>Always look at the <b>short hand</b> first. The hour is the number it has <b>just passed</b>.</p>
-   <p>The gold slice on the dial is the <b>hour zone</b>. While the short hand is anywhere inside it, the hour stays the same. Short hand on 3 and long hand on 12 = <b>3 o'clock</b>.</p>
-   <div class="callout">Try 7:45. The short hand is nearly on 8, but it is still inside the 7 zone, so the hour is still <b>7</b>.</div>`},
- {title:'Counting Minutes',tag:'Every number is 5',skin:'poljot',t:[4,25],fields:['minute','digital'],ov:'minutes',
+   <p>The gold slice is the <b>hour zone</b>. While the short hand is anywhere inside it, the hour stays the same.</p>
+   <p>Long hand straight up on 12? Then it is exactly that hour. Short hand on 3, long hand on 12 = <b>3 o'clock</b>.</p>
+   <div class="callout">Try 7:45. The short hand is nearly on 8, but it is still inside the 7 zone, so the hour is still <b>7</b>.</div>`,
+  oops:`Saying the number the short hand is <b>closest</b> to. At 7:50 it is almost on 8, but the hour is still 7.`},
+ {title:'Counting Minutes',tag:'Every number is 5',min:12,skin:'poljot',t:[4,25],fields:['minute','digital'],ov:'minutes',numsToggle:true,
   legend:[['#1b1613','Minute ring'],['#f0c4c4','Minutes gone this hour']],
   presets:[[4,5],[4,10],[4,25],[4,40],[4,55]],
-  html:`<p>Now the <b>long hand</b>. Each number on the dial equals <b>five minutes</b>. The dark ring around this watch shows them: 05, 10, 15 … 55.</p>
-   <p>The red shading grows as the long hand travels. A full circle is one hour.</p>
-   <div class="callout">Trick: multiply the number by 5. Hand on 7? 7 × 5 = 35 minutes. The small ticks between numbers are single minutes, so one tick past 7 is 36.</div>`},
- {title:'Past and To',tag:'Saying it like a human',skin:'slava',t:[8,15],fields:['says','digital'],ov:'halves',
+  html:`<p>Now the <b>long hand</b>. Each number on the dial is worth <b>five minutes</b>. The dark ring around this watch shows them: 00, 05, 10 … 55.</p>
+   <div class="callout">Multiply the number by 5. Long hand on 7? 7 × 5 = 35 minutes.</div>
+   <p>The small ticks between numbers are <b>single minutes</b>. One tick past 7 is 36. Three ticks past 7 is 38.</p>
+   <p><b>No numbers on the dial?</b> Use four anchors you always know: 12 at the top, 3 on the right, 6 at the bottom, 9 on the left. Count the big marks from the nearest anchor, 5 minutes each. Two big marks after the 3 = 15 + 10 = <b>25</b>.</p>
+   <p>Tap <b>Numbers off</b> above and try it.</p>`,
+  oops:`Reading the number itself as minutes. Long hand on 4 means <b>20</b> minutes, not 4.`},
+ {title:'Past and To',tag:'Saying it like a human',min:10,skin:'slava',t:[8,15],fields:['says','digital'],ov:'halves',
   legend:[['#b9d0b0','Past side'],['#ecc0c0','To side']],
   presets:[[8,0],[8,15],[8,30],[8,45],[8,20],[8,50]],
-  html:`<p>People often say "quarter to nine" instead of "eight forty-five". Which word you use depends on <b>which half of the dial</b> the long hand is on.</p>
-   <p><b>Green half (12 down to 6):</b> minutes <b>past</b> the hour. <b>Red half (6 up to 12):</b> minutes <b>to</b> the next hour.</p>
+  html:`<p>People often say "quarter to nine" instead of "eight forty-five". The word depends on <b>which half of the dial</b> the long hand is on.</p>
+   <p><b>Green half</b> (12 round to 6): minutes <b>past</b> this hour.<br><b>Red half</b> (6 round to 12): minutes <b>to</b> the next hour.</p>
    <p>Hand on 3 = <b>quarter past</b>. On 6 = <b>half past</b>. On 9 = <b>quarter to</b>.</p>
-   <div class="callout">8:45 is "quarter to <b>nine</b>". Once the long hand crosses into the red half, you name the <b>next</b> hour.</div>`},
- {title:'24-Hour Time',tag:'Military and polar style',skin:'raketa',t:[5,45],fields:['digital','h24'],ampm:true,ov:'ampm',
+   <div class="callout">For "to", count the minutes left until 12. 8:40 → 20 left → "twenty to <b>nine</b>". Always name the <b>next</b> hour.</div>`,
+  oops:`Naming the wrong hour with "to". 8:50 is "ten to <b>nine</b>", not "ten to eight".`},
+ {title:'24-Hour Time',tag:'Military and polar style',min:10,skin:'raketa',t:[5,45],fields:['digital','h24'],ampm:true,ov:'ampm',
   presets:[[1,0],[6,30],[12,0],[5,45],[11,15]],
-  html:`<p>Soldiers, pilots and polar crews use the <b>24-hour clock</b> so nobody mixes up morning and evening. The day starts at 00:00 (midnight), reaches 12:00 at noon and runs on to 23:59.</p>
-   <p><b>PM rule:</b> add 12. 5 PM = 17:00, 9 PM = 21:00. Going back? Subtract 12.</p>
+  html:`<p>Soldiers, pilots, train timetables and phones use the <b>24-hour clock</b>, so nobody mixes up morning and evening. The day starts at 00:00 (midnight), hits 12:00 at noon and runs to 23:59.</p>
+   <div class="callout">PM? Add 12. 5 PM = 17:00. Going back from 13 or more? Subtract 12. 21:00 = 9 PM.</div>
    <p><b>The 12 o'clock trap:</b> 12:30 AM is half an hour after midnight, so it is <b>00:30</b>. 12:30 PM is just after noon, so it stays <b>12:30</b>.</p>
-   <p>The red inner numbers on this <b>Raketa</b> show the PM hours 13 to 23, with 24 at the top for midnight (also written 00). Switch between AM and PM below.</p>`},
- {title:'Field Tricks',tag:'What the pros know',skin:'sturm',t:[2,55],fields:['hour','minute','digital'],ov:'creep',
+   <p>The red inner numbers on this <b>Raketa</b> show the PM hours 13 to 23, with 24 at the top for midnight (also written 00). Switch between AM and PM below.</p>`,
+  oops:`The 12 trap again. 00:15 is 12:15 <b>AM</b> (just after midnight). 12:15 is 12:15 <b>PM</b> (lunchtime).`},
+ {title:'Field Tricks',tag:'Times near the hour',min:10,skin:'sturm',t:[2,55],fields:['hour','minute','digital'],ov:'creep',numsToggle:true,
   legend:[['#d9a521','Hour hand travel'],['#c8102e','Next number']],
   presets:[[2,55],[6,50],[11,58],[12,2]],
-  html:`<p><b>Near the top of the hour</b> the short hand sits almost on the next number. At 2:55 it looks like 3, but the long hand on 11 tells the truth: <b>it is not three yet</b>.</p>
-   <p>The gold arc shows how far the short hand has travelled since 2. The red circle marks where it is heading. It only arrives when the long hand reaches 12.</p>
-   <p><b>Rule: the long hand decides.</b> Long hand on the left side of the dial? The short hand has not reached the next number yet.</p>
-   <p><b>The crown</b> is the ridged knob at 3 o'clock. Pull it out, turn it to move the hands, push it back in. Watch the long hand while you turn; the short hand follows on its own.</p>
-   <div class="callout">Tap 2:55, then 11:58 and 12:02. Watch the gold arc almost close, then start again.</div>`},
- {title:'Drill: Generate',tag:'Unlimited practice',drill:true,skin:'vostok',t:[0,0],fields:[],presets:[],html:''}
+  html:`<p>Near the top of the hour the short hand sits almost on the next number. At 2:55 it looks like 3, but <b>it is not three yet</b>.</p>
+   <p>The gold arc shows how far the short hand has moved since 2. The red circle marks where it is heading. It arrives only when the long hand reaches 12.</p>
+   <div class="callout">The long hand decides. Long hand on the left side of the dial? The short hand has not reached the next number yet.</div>
+   <p><b>The crown</b> is the ridged knob at 3 o'clock. Pull it out, turn it to move the hands, push it back in.</p>`,
+  oops:`Reading 2:55 as <b>3</b>:55 because the short hand looks like it is on 3.`},
+ {title:'Drill: Generate',tag:'Unlimited practice',min:10,drill:true,skin:'vostok',t:[0,0],fields:[],presets:[],html:''}
 ];
+// 3-question check at the end of each lesson, built from the exam's own question types
+const RND=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const R5=()=>5*RND(0,11);
+const CHECKS=[
+ ()=>[{type:'read',h:RND(0,11),m:0,nums:'all'},{type:'read',h:RND(0,11),m:0,nums:'all'},{type:'set',h:RND(0,11),m:0,nums:'all'}],
+ ()=>[{type:'read',h:RND(0,11),m:0,nums:'all'},{type:'read',h:RND(0,11),m:30,nums:'all'},{type:'set',h:RND(0,11),m:30,nums:'all'}],
+ ()=>[{type:'read',h:RND(0,11),m:R5(),nums:'all'},{type:'read',h:RND(0,11),m:R5(),nums:'none'},{type:'set',h:RND(0,11),m:R5(),nums:'all'}],
+ ()=>[{type:'word',h:RND(0,11),m:pick([15,30,45]),nums:'all'},{type:'word',h:RND(0,11),m:5*RND(1,5),nums:'all'},{type:'word',h:RND(0,11),m:5*RND(7,11),nums:'all'}],
+ ()=>[{type:'convert',h24:RND(13,23),m:R5()},{type:'convert',h24:RND(1,11),m:R5()},{type:'convert',h24:pick([0,12]),m:5*RND(1,11)}],
+ ()=>[{type:'read',h:RND(0,11),m:RND(50,58),nums:'all'},{type:'read',h:RND(0,11),m:RND(50,58),nums:'none'},{type:'set',h:RND(0,11),m:55,nums:'all'}]
+];
+function lessonCheck(i,host){
+  const qs=CHECKS[i]().map(q=>({...q,skin:pick(SKIN_LIST),h:q.h24!=null?q.h24%12:q.h}));
+  let k=0,score=0;const res=[];
+  const draw=()=>{
+    if(k>=qs.length){
+      const pass=score>=2;
+      if(pass){S.done[i]=1;store('done',S.done)}
+      host.innerHTML=`<div class="fb ${pass?'ok':'no'}"><strong>${score}/${qs.length} · ${pass?'Lesson passed':'Not yet'}</strong>${pass?(i<5?'Ticked off. On to the next lesson.':'Ticked off. Run the drill, then take the exam.'):'Look over the lesson again, play with the watch, then retry. You need 2 of 3.'}</div>
+        <button class="btn alt block" style="margin-top:10px" id="ckagain">${pass?'Practise again':'Try again'}</button>`;
+      if(pass)burst(host,10);
+      $('#ckagain').onclick=()=>lessonCheck(i,host);
+      return;
+    }
+    const q=qs[k],T=q.h*60+q.m;
+    const dots=`<div class="progress">${qs.map((_,j)=>`<span class="${j<k?(res[j]?'ok':'no'):j===k?'now':''}"></span>`).join('')}</div>`;
+    const done=(ok,msg)=>{
+      res[k]=ok;if(ok)score++;
+      $('#ckfb').innerHTML=`<div class="fb ${ok?'ok':'no'}"><strong>${ok?'Correct!':'Not quite'}</strong>${msg}</div>
+        <button class="btn block" style="margin-top:10px" id="cknx">${k===qs.length-1?'See result':'Next question'}</button>`;
+      $('#cknx').onclick=()=>{k++;draw();host.scrollIntoView({block:'start',behavior:'smooth'})};
+    };
+    if(q.type==='set'){
+      let start;do{start=RND(0,719)}while(Math.abs(((start-T+360)%720)-360)<40);
+      host.innerHTML=`${dots}<p class="prompt">Set the watch to <span style="color:var(--red)">${time12(q.h,q.m)}</span></p>
+        <div class="clockbox" id="ckclk"></div><div class="hint">Drag the dial</div>
+        <div id="ckfb"><button class="btn block" style="margin-top:12px" id="ckrep">Check</button></div>`;
+      const c=makeClock($('#ckclk'),{skin:q.skin,t:start,numerals:q.nums,interactive:true});
+      $('#ckrep').onclick=()=>{
+        const diff=Math.abs(((Math.round(c.t)-T+360)%720)-360);c.interactive=false;c.ov='explain';
+        if(diff<=1)burst($('#ckclk'),8);
+        done(diff<=1,diff<=1?`${phrase(q.h,q.m)}.`:`Target was ${time12(q.h,q.m)}. ${explain(q)}`);
+        setTimeout(()=>c.animateTo(T),350);
+      };
+    } else {
+      const isConv=q.type==='convert',isWord=q.type==='word';
+      const {correct,opts}=buildOptions(q,q.m%5?'general':'officer');
+      host.innerHTML=`${dots}<p class="prompt">${isConv?'Convert to 12-hour time':isWord?'How do you say this time?':'What time does the watch show?'}</p>
+        ${isConv?`<div class="lcd">${pad(q.h24)}:${pad(q.m)}</div>`:`<div class="clockbox" id="ckclk"></div>`}
+        <div class="opts ${isWord?'one':''}" id="ckopts">${shuffle(opts).map(x=>`<button class="opt" data-v="${x}">${x}</button>`).join('')}</div>
+        <div id="ckfb"></div>`;
+      const c=isConv?null:makeClock($('#ckclk'),{skin:q.skin,t:T,numerals:q.nums});
+      let answered=false;
+      $('#ckopts').onclick=e=>{
+        const b=e.target.closest('.opt');if(!b||answered)return;answered=true;
+        const ok=b.dataset.v===correct;
+        b.classList.add(ok?'right':'wrong');
+        if(!ok)[...$('#ckopts').children].forEach(x=>{if(x.dataset.v===correct)x.classList.add('right')});
+        if(c){c.ov='explain';c.render()}
+        if(ok)burst(b,8);
+        done(ok,isConv?convExplain(q.h24,q.m,correct):explain(q));
+      };
+    }
+  };
+  draw();
+}
 
 /* ---------- drill lesson ---------- */
 function viewDrill(i,L){
@@ -672,9 +756,19 @@ function viewLessons(){
   setCompact(S.lesson!=null);
   if(S.lesson==null){
     const nd=LESSONS.filter((_,i)=>S.done[i]).length,nxt=LESSONS.findIndex((_,i)=>!S.done[i]);
-    v.innerHTML=`<h2>Lessons</h2><p class="sub">Seven short lessons. Do them in order, comrade.</p>
+    v.innerHTML=`<h2>Lessons</h2><p class="sub">Six lessons and a drill. About an hour a day, two days.</p>
+      <div class="card plan"><h3>Your 2-day plan</h3>
+        <div class="day"><b>Day 1 · ~50 min</b><span>Lessons 1 to 4, then 10 minutes of Drill.</span></div>
+        <div class="day"><b>Day 2 · ~45 min</b><span>5 minutes of Drill to warm up, Lessons 5 and 6, then the exam: Cadet → Officer → General.</span></div>
+        <p class="hint" style="text-align:left;margin-top:8px">A lesson gets its ✓ when you pass its 3-question check.</p>
+        <details><summary>Cheat sheet: the 3-step method</summary>
+          <ol><li><b>Short hand</b> → which hour zone is it in? That is the hour.</li>
+          <li><b>Long hand</b> → number × 5, plus any small ticks. Those are the minutes.</li>
+          <li><b>Say it</b> → right half: "past" this hour. Left half: "to" the <b>next</b> hour.</li></ol>
+          <p>No numbers? 12 top, 3 right, 6 bottom, 9 left. Count big marks from the nearest one.<br>24-hour? PM = add 12. 00:xx is 12:xx AM.</p></details>
+      </div>
       <div class="meter"><span>${nd}/${LESSONS.length} done</span><span class="bar"><i style="width:${nd/LESSONS.length*100}%"></i></span></div>`+
-      LESSONS.map((L,i)=>`<button class="mission ${i===nxt?'next':''}" data-i="${i}"><span class="no">${i+1}</span><span><b>${L.title}</b><span>${i===nxt?(nd?'Up next · ':'Start here · '):''}${L.tag}</span></span>${S.done[i]?'<span class="tick">✓</span>':''}</button>`).join('')+
+      LESSONS.map((L,i)=>`<button class="mission ${i===nxt?'next':''}" data-i="${i}"><span class="no">${i+1}</span><span><b>${L.title}</b><span>${i===nxt?(nd?'Up next · ':'Start here · '):''}${L.tag} · ${L.min} min</span></span>${S.done[i]?'<span class="tick">✓</span>':''}</button>`).join('')+
       `<button class="btn block" id="toquiz">${nd===LESSONS.length?'Take the exam':'Ready? Take the exam'}</button>`;
     v.onclick=e=>{
       const m=e.target.closest('.mission');
@@ -688,10 +782,10 @@ function viewLessons(){
   S.pm=false;
   v.innerHTML=`<button class="back" id="back">← All lessons</button>
    <div class="card">
-    <h2>${i+1}. ${L.title}</h2><p class="sub">${L.tag}</p>
+    <h2>${i+1}. ${L.title}</h2><p class="sub">${L.tag} · about ${L.min} min · <a href="#ckcard" class="jump">know it? skip to the check ↓</a></p>
     <div class="clockbox" id="clk"></div>
     ${L.legend?`<div class="legend">${L.legend.map(([c,n])=>`<span style="--c:${c}">${n}</span>`).join('')}</div>`:''}
-    <div class="chips" id="hlb"></div>
+    <div class="chips" id="hlb">${L.numsToggle?'<button class="chip" id="numsT">Numbers off</button>':''}</div>
     <div class="readout" id="ro"></div>
     <div class="hint">Drag the dial to move the hands</div>
    </div>
@@ -699,7 +793,9 @@ function viewLessons(){
      <h3>Try these times</h3>
      <div class="chips" id="pre">${L.presets.map(p=>`<button class="chip" data-t="${p[0]*60+p[1]}">${time12(p[0],p[1])}</button>`).join('')}</div>
      ${L.ampm?`<h3>AM or PM?</h3><div class="chips"><button class="chip on" data-pm="0">☀ AM · midnight to noon</button><button class="chip" data-pm="1">☾ PM · noon to midnight</button></div>`:''}
+     ${L.oops?`<div class="callout oops"><b>Common mistake:</b> ${L.oops}</div>`:''}
    </div>
+   <div class="card" id="ckcard"><h2>Check yourself</h2><p class="sub">3 questions · get 2 right to pass</p><div id="ck"></div></div>
    <div class="nav2">
      ${i>0?'<button class="btn alt" id="prev">← Back</button>':''}
      ${i<LESSONS.length-1?'<button class="btn" id="next">Next →</button>':'<button class="btn" id="fin">Done — to the exam</button>'}
@@ -718,6 +814,10 @@ function viewLessons(){
       [...hb.children].forEach(x=>x.classList.toggle('on',x===b));
     };
   }
+  lessonCheck(i,$('#ck'));
+  const nt=$('#numsT');
+  if(nt)nt.onclick=()=>{const off=clock.numerals!=='none';clock.numerals=off?'none':null;clock.render();nt.classList.toggle('on',off)};
+  const jp=v.querySelector('.jump');if(jp)jp.onclick=e=>{e.preventDefault();$('#ckcard').scrollIntoView({behavior:'smooth'})};
   $('#pre').onclick=e=>{
     const b=e.target.closest('.chip');if(!b)return;
     clock.animateTo(+b.dataset.t);
@@ -730,7 +830,7 @@ function viewLessons(){
   const mark=()=>{S.done[i]=1;store('done',S.done)};
   $('#back').onclick=()=>{S.lesson=null;viewLessons();window.scrollTo(0,0)};
   const nx=$('#next'),pv=$('#prev'),fin=$('#fin');
-  if(nx)nx.onclick=()=>{mark();S.lesson=i+1;viewLessons();window.scrollTo(0,0)};
+  if(nx)nx.onclick=()=>{S.lesson=i+1;viewLessons();window.scrollTo(0,0)};
   if(pv)pv.onclick=()=>{S.lesson=i-1;viewLessons();window.scrollTo(0,0)};
   if(fin)fin.onclick=()=>{mark();S.tab='quiz';go()};
   v.onclick=null;
