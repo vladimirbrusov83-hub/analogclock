@@ -300,10 +300,10 @@ const SKINS={
     fact:'"Commander\'s watch" from the Chistopol factory. Tough, military-style, and loved by Soviet officers.'},
   slava:{id:'slava',name:'СЛАВА',sub:'С ДАТОЙ',en:'Slava',case:'#d4d0c4',rim:'#666',dial:'#fbf7ea',ink:'#1b1613',
     hand:'#1b1613',lume:'#fbf7ea',marker:'baton',numerals:'none',hands:'sword',accent:'#c8102e',date:true,
-    fact:'From the Second Moscow Watch Factory. Self-winding, with a date window. Glory, in the name.'},
+    fact:'From the Second Moscow Watch Factory. Many models have a date window, like this one. Its name means glory.'},
   pobeda:{id:'pobeda',name:'ПОБЕДА',sub:'СДЕЛАНО В СССР',en:'Pobeda',case:'#c9a227',rim:'#8a6d12',dial:'#ecdfb8',ink:'#3a2a18',
     hand:'#2a1a0c',lume:'#ecdfb8',marker:'dots',numerals:'all',hands:'leaf',accent:'#8f0b20',
-    fact:'"Victory". Launched in 1946 in Gorky and named after the end of the war. A watch for the whole country.'},
+    fact:'"Victory". Launched right after the war and named after the victory. A watch for the whole country.'},
   sturm:{id:'sturm',name:'ШТУРМАНСКИЕ',sub:'СДЕЛАНО В СССР',en:'Sturmanskie',case:'#8d8d86',rim:'#333',dial:'#1d1a17',ink:'#f2ead0',
     hand:'#f2ead0',lume:'#f2ead0',marker:'baton',numerals:'all',hands:'sword',accent:'#e0a020',
     fact:'The navigator\'s watch. Yuri Gagarin wore one on 12 April 1961, the first human flight into space.'}
@@ -514,7 +514,7 @@ const LESSONS=[
   html:`<p>Soldiers, pilots and polar crews use the <b>24-hour clock</b> so nobody mixes up morning and evening. The day starts at 00:00 (midnight), reaches 12:00 at noon and runs on to 23:59.</p>
    <p><b>PM rule:</b> add 12. 5 PM = 17:00, 9 PM = 21:00. Going back? Subtract 12.</p>
    <p><b>The 12 o'clock trap:</b> 12:30 AM is half an hour after midnight, so it is <b>00:30</b>. 12:30 PM is just after noon, so it stays <b>12:30</b>.</p>
-   <p>The red inner numbers on this <b>Raketa</b> show the afternoon hours 13 to 24. Switch between AM and PM below.</p>`},
+   <p>The red inner numbers on this <b>Raketa</b> show the PM hours 13 to 23, with 24 at the top for midnight (also written 00). Switch between AM and PM below.</p>`},
  {title:'Field Tricks',tag:'What the pros know',skin:'sturm',t:[2,55],fields:['hour','minute','digital'],ov:'creep',
   legend:[['#d9a521','Hour hand travel'],['#c8102e','Next number']],
   presets:[[2,55],[6,50],[11,58],[12,2]],
@@ -658,7 +658,7 @@ function readoutHTML(t,fields){
   const h=Math.floor(t/60),m=t%60,h12=h||12;
   const rows={
     digital:['Digital',time12(h,m)],
-    hour:['Hour hand',`last passed <b>${h12}</b>`],
+    hour:['Hour hand',m===0?`exactly on <b>${h12}</b>`:`last passed <b>${h12}</b>`],
     minute:['Minute hand',m%5===0?`on <b>${m/5||12}</b> → ${m} min`:`${m} min (${m%5} past the ${Math.floor(m/5)||12})`],
     says:['You say',phrase(h,m)],
     h24:['24-hour',`${pad(h+(S.pm?12:0))}:${pad(m)}`]
@@ -790,7 +790,7 @@ function viewWatches(){
 /* ---------- quiz ---------- */
 const LEVELS={
   cadet:{ru:'КУРСАНТ',en:'Cadet',desc:'Full hours and half hours. Numbers on the dial.',numerals:'all',step:()=>Math.random()<.5?0:30},
-  officer:{ru:'ОФИЦЕР',en:'Officer',desc:'Any five minutes. Watch style decides the dial.',numerals:null,step:()=>5*Math.floor(Math.random()*12)},
+  officer:{ru:'ОФИЦЕР',en:'Officer',desc:'Any five minutes. Some watches show numbers, some only ticks.',numerals:null,step:()=>5*Math.floor(Math.random()*12)},
   general:{ru:'ГЕНЕРАЛ',en:'General',desc:'Any minute. No numbers, only tick marks.',numerals:'none',step:()=>Math.floor(Math.random()*60)}
 };
 const RANKS=[[0,'Recruit','Новобранец'],[4,'Private','Рядовой'],[6,'Sergeant','Сержант'],[8,'Captain','Капитан'],[10,'Marshal','Маршал']];
