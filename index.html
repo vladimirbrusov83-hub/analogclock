@@ -155,6 +155,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 .hud+.scene{margin-top:0;border-top:0}
 .tele{font-family:'Special Elite','Courier New',monospace;background:#efe7c8;border:2px dashed var(--ink);
   padding:10px 12px;margin:0 0 14px;font-size:15px;line-height:1.4;color:#2a2318}
+.tele .cur{color:var(--red);animation:flash .6s steps(2) infinite}
 .tele p{margin:0 0 8px}.tele p:last-child{margin:0}
 .tele .top{color:var(--red);font:400 12px var(--head);letter-spacing:.12em;margin-bottom:6px}
 @keyframes flash{50%{opacity:.2}}
@@ -175,8 +176,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 .scene.okpulse{animation:okp .7s}
 @keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .scene svg{animation:enter .45s ease-out}
-.tele{animation:enter .5s .1s ease-out both}
-@media (prefers-reduced-motion:reduce){.bob,.glow,.spin,.flash,.w1,.w2,.w3,.needle,.scene svg,.tele{animation:none}}
+@media (prefers-reduced-motion:reduce){.bob,.glow,.spin,.flash,.w1,.w2,.w3,.needle,.scene svg,.tele .cur{animation:none}}
 nav button[data-tab=mission]{background:var(--olive-l)}
 nav button[data-tab=mission].on{background:var(--red)}
 
@@ -505,7 +505,7 @@ $('#tabs').addEventListener('click',e=>{
   go();
 });
 function go(){
-  clearInterval(S.timer);
+  clearInterval(S.timer);clearInterval(S.tw);
   drawTabs();
   ({lessons:viewLessons,bench:viewBench,mission:viewMission,quiz:viewQuiz,watches:viewWatches})[S.tab]();
   window.scrollTo(0,0);
@@ -875,7 +875,29 @@ function sceneSVG(stage,strikes,mode){
   }
   return s;
 }
-function viewMission(){
+function viewMission(){viewMission0();typewrite()}
+function typewrite(){
+  clearInterval(S.tw);
+  const box=document.querySelector('.tele');if(!box)return;
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  const w=document.createTreeWalker(box,NodeFilter.SHOW_TEXT),nodes=[];
+  while(w.nextNode())nodes.push(w.currentNode);
+  const full=nodes.map(n=>n.data);
+  nodes.forEach(n=>n.data='');
+  const cur=document.createElement('span');cur.className='cur';cur.textContent='\u258C';
+  let k=0,c=0,wait=0;
+  const place=()=>{const n=nodes[Math.min(k,nodes.length-1)];n.parentNode.insertBefore(cur,n.nextSibling)};
+  place();
+  S.tw=setInterval(()=>{
+    if(wait>0){wait--;return}
+    if(k>=nodes.length){clearInterval(S.tw);setTimeout(()=>cur.remove(),1500);return}
+    const ch=full[k][c++];
+    nodes[k].data+=ch;
+    if(c>=full[k].length){k++;c=0;if(k<nodes.length)place()}
+    if('.,:!?'.includes(ch))wait=ch==='.'?7:3;
+  },22);
+}
+function viewMission0(){
   const v=$('#view');
   const M=S.m;
   const scene=(st,mode)=>`<div class="scene"><svg viewBox="0 0 360 200" role="img" aria-label="Soviet bunker scene">${sceneSVG(st,M?M.strikes:0,mode)}</svg></div>`;
