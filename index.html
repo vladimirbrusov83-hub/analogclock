@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Watch Academy · ЧАСЫ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#c8102e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ЧАСЫ">
+<link rel="apple-touch-icon" id="touchIcon" href="">
+<link rel="manifest" id="manifestLink" href="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Russo+One&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#c8102e; --red-d:#8f0b20; --cream:#efe3c2; --paper:#f6eed8;
+  --ink:#1b1613; --gold:#d9a521; --muted:#6b5d4b; --ok:#2f6b2f;
+  --head:'Russo One','Oswald',Impact,sans-serif;
+  --body:'Oswald','Arial Narrow',Arial,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  background:var(--paper);
+  background-image:repeating-linear-gradient(45deg,transparent 0 14px,rgba(27,22,19,.035) 14px 15px);
+  color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.35;
+  -webkit-user-select:none;user-select:none;overscroll-behavior:none;
+}
+#app{max-width:520px;margin:0 auto;min-height:100%;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+header{
+  position:relative;background:var(--red);color:var(--cream);
+  padding:calc(14px + env(safe-area-inset-top)) 16px 16px;
+  border-bottom:5px solid var(--ink);overflow:hidden;
+}
+header::after{ /* black constructivist wedge */
+  content:"";position:absolute;right:-30px;top:-20px;width:150px;height:200px;
+  background:var(--ink);transform:rotate(18deg);opacity:.92;
+}
+header .star{position:absolute;right:20px;top:calc(12px + env(safe-area-inset-top));z-index:2;width:46px;height:46px}
+header h1{position:relative;z-index:2;margin:0;font:400 38px/1 var(--head);letter-spacing:.04em}
+header p{position:relative;z-index:2;margin:6px 0 0;font-weight:500;letter-spacing:.18em;text-transform:uppercase;font-size:13px}
+.stripe{height:8px;background:repeating-linear-gradient(90deg,var(--gold) 0 18px,var(--ink) 18px 36px)}
+main{padding:16px}
+h2{font:400 26px/1.1 var(--head);margin:0 0 6px;text-transform:uppercase}
+h3{font:400 18px/1.1 var(--head);margin:14px 0 6px;text-transform:uppercase;color:var(--red-d)}
+.sub{color:var(--muted);margin:0 0 14px;font-size:15px;letter-spacing:.04em}
+.card{
+  background:var(--cream);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);
+  padding:14px;margin:0 0 16px;
+}
+button{font:inherit;cursor:pointer;color:inherit}
+.btn{
+  display:inline-block;background:var(--red);color:var(--cream);border:3px solid var(--ink);
+  box-shadow:3px 3px 0 var(--ink);padding:10px 16px;font:400 16px var(--head);
+  text-transform:uppercase;letter-spacing:.06em;min-height:46px;
+}
+.btn:active{transform:translate(3px,3px);box-shadow:none}
+.btn.alt{background:var(--cream);color:var(--ink)}
+.btn.dark{background:var(--ink);color:var(--cream)}
+.btn[disabled]{opacity:.45}
+.btn.block{display:block;width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{
+  background:var(--paper);border:2px solid var(--ink);padding:8px 12px;min-height:42px;
+  font:500 16px var(--body);letter-spacing:.04em;
+}
+.chip.on{background:var(--ink);color:var(--cream)}
+.chip.hl-hour.on{background:var(--gold);color:var(--ink)}
+
+/* lesson list */
+.mission{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  background:var(--cream);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);
+  padding:12px;margin:0 0 14px}
+.mission:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+.mission .no{flex:0 0 52px;height:52px;background:var(--red);color:var(--cream);
+  display:grid;place-items:center;font:400 28px var(--head);border:3px solid var(--ink)}
+.mission b{display:block;font:400 18px var(--head);text-transform:uppercase}
+.mission span{color:var(--muted);font-size:15px}
+.mission .tick{margin-left:auto;font:400 28px var(--head);color:var(--ok)}
+
+/* clock area */
+.clockbox{display:block;width:100%;max-width:340px;margin:0 auto;aspect-ratio:1;touch-action:none}
+.clockbox svg{width:100%;height:100%;display:block;touch-action:none}
+.clockbox.drag{cursor:grab}
+.readout{border:3px solid var(--ink);background:var(--ink);color:var(--cream);margin-top:12px}
+.readout div{display:flex;justify-content:space-between;gap:10px;padding:7px 12px;border-bottom:1px solid #4a423a;font-size:16px}
+.readout div:last-child{border-bottom:0}
+.readout i{font-style:normal;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;font-size:13px;align-self:center}
+.readout b{font-weight:500;text-align:right}
+.lcd{font:400 54px/1 var(--head);text-align:center;background:var(--ink);color:#ffb347;
+  border:3px solid var(--ink);padding:10px;letter-spacing:.08em;margin-top:12px;
+  text-shadow:0 0 10px rgba(255,160,40,.5)}
+.nav2{display:flex;gap:10px;margin-top:6px}
+.nav2 .btn{flex:1}
+.back{background:none;border:0;font:500 15px var(--body);letter-spacing:.12em;text-transform:uppercase;
+  color:var(--red-d);padding:4px 0 12px}
+.lessontext p{margin:0 0 10px}
+.lessontext b{color:var(--red-d)}
+.callout{border:2px solid var(--ink);background:var(--paper);padding:8px 12px 8px 34px;margin:10px 0;font-weight:500;position:relative}
+.callout::before{content:"★";position:absolute;left:10px;top:8px;color:var(--red)}
+
+/* quiz */
+.prompt{font:400 22px/1.15 var(--head);text-transform:uppercase;margin:0 0 12px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.opt{background:var(--paper);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);
+  padding:14px 8px;min-height:60px;font:400 20px var(--head);text-align:center}
+.opt:active{transform:translate(3px,3px);box-shadow:none}
+.opt.right{background:var(--ok);color:#fff}
+.opt.wrong{background:var(--red);color:var(--cream)}
+.opts.one{grid-template-columns:1fr}
+.opts.one .opt{font-size:18px}
+.progress{display:flex;gap:4px;margin-bottom:12px}
+.progress span{flex:1;height:10px;border:2px solid var(--ink);background:var(--paper)}
+.progress span.ok{background:var(--ok)} .progress span.no{background:var(--red)} .progress span.now{background:var(--gold)}
+.fb{margin-top:14px;border:3px solid var(--ink);padding:10px 12px;font-weight:500}
+.fb.ok{background:#d6e8c8}.fb.no{background:#f3c9c9}
+.fb strong{font:400 18px var(--head);text-transform:uppercase;display:block}
+.stamp{display:inline-block;border:5px solid var(--red);color:var(--red);padding:6px 14px;
+  font:400 30px var(--head);text-transform:uppercase;transform:rotate(-6deg);letter-spacing:.06em}
+.big{font:400 64px/1 var(--head);color:var(--red)}
+.lvl{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;margin-bottom:12px}
+.lvl small{display:block;color:var(--muted);font:500 14px var(--body);text-transform:none;letter-spacing:0}
+
+/* collection */
+.wcard{display:flex;gap:12px;align-items:center}
+.wcard .clockbox{flex:0 0 118px;margin:0}
+.wcard h3{margin:0 0 4px;color:var(--ink)}
+.wcard p{margin:0;font-size:15px}
+.wcard small{color:var(--red-d);font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+
+nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--ink);
+  border-top:4px solid var(--red);display:flex;justify-content:center;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+nav .in{display:flex;width:100%;max-width:520px}
+nav button{
+  flex:1;background:none;border:0;color:var(--cream);padding:9px 2px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:1px;min-height:62px;
+}
+nav button small{font:400 10px var(--head);letter-spacing:.1em;color:var(--gold)}
+nav button span{font:500 15px var(--body);text-transform:uppercase;letter-spacing:.06em}
+nav button.on{background:var(--red)}
+nav button.on small{color:var(--cream)}
+.hint{font-size:14px;color:var(--muted);text-align:center;margin-top:8px;letter-spacing:.06em;text-transform:uppercase}
+@media (max-width:380px){
+  header h1{font-size:32px} .opt{font-size:18px} .lcd{font-size:44px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <svg class="star" viewBox="-50 -50 100 100" aria-hidden="true"><polygon id="hstar" fill="#d9a521" stroke="#1b1613" stroke-width="5"/></svg>
+    <h1>ЧАСЫ</h1>
+    <p>Watch Academy · Time is a duty</p>
+  </header>
+  <div class="stripe"></div>
+  <main id="view"></main>
+</div>
+<nav><div class="in" id="tabs"></div></nav>
+
+<script>
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const pad=n=>String(n).padStart(2,'0');
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+function store(k,v){try{if(v===undefined){return JSON.parse(localStorage.getItem('sw_'+k))}localStorage.setItem('sw_'+k,JSON.stringify(v))}catch(e){return null}}
+function starPts(r,r2,cx=0,cy=0){let p=[];for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r2:r;p.push((cx+rr*Math.cos(a)).toFixed(1)+','+(cy+rr*Math.sin(a)).toFixed(1))}return p.join(' ')}
+$('#hstar').setAttribute('points',starPts(42,17));
+
+/* ---------- time words ---------- */
+const NUM=['twelve','one','two','three','four','five','six','seven','eight','nine','ten','eleven'];
+const hn=h=>NUM[((h%12)+12)%12];
+function phrase(h,m){
+  h=h%12;
+  if(m===0) return cap(hn(h)+" o'clock");
+  if(m===15) return 'Quarter past '+hn(h);
+  if(m===30) return 'Half past '+hn(h);
+  if(m===45) return 'Quarter to '+hn(h+1);
+  const w={5:'Five',10:'Ten',20:'Twenty',25:'Twenty-five'};
+  const say=n=>w[n]||(n===1?'One minute':n+' minutes');
+  return m<30 ? say(m)+' past '+hn(h) : say(60-m)+' to '+hn(h+1);
+}
+const time12=(h,m)=>`${(h%12)||12}:${pad(m)}`;
+
+/* ---------- watches ---------- */
+const SKINS={
+  poljot:{id:'poljot',name:'ПОЛЁТ',sub:'17 КАМНЕЙ',en:'Poljot',case:'#c9a227',rim:'#8a6d12',dial:'#f2ead0',ink:'#1b1613',
+    hand:'#1b1613',lume:'#f2ead0',marker:'baton',numerals:'all',hands:'sword',accent:'#c8102e',
+    fact:'Made by the First Moscow Watch Factory. Dress watch of the Soviet engineer and the proud graduate.'},
+  raketa:{id:'raketa',name:'РАКЕТА',sub:'24 ЧАСА',en:'Raketa',case:'#b8b8b0',rim:'#555',dial:'#f4f0e4',ink:'#1b1613',
+    hand:'#1b1613',lume:'#f4f0e4',marker:'baton',numerals:'all',hands:'leaf',accent:'#c8102e',h24:true,
+    fact:'Petrodvorets Watch Factory. Famous for the 24-hour dial built for polar explorers, where day and night look alike.'},
+  vostok:{id:'vostok',name:'ВОСТОК',sub:'КОМАНДИРСКИЕ',en:'Vostok Komandirskie',case:'#6e6e68',rim:'#222',dial:'#171515',ink:'#efe3c2',
+    hand:'#efe3c2',lume:'#9fc79a',marker:'baton',numerals:'quarters',hands:'baton',accent:'#c8102e',star:true,
+    fact:'"Commander\'s watch" from the Chistopol factory. Tough, military-style, and loved by Soviet officers.'},
+  slava:{id:'slava',name:'СЛАВА',sub:'С ДАТОЙ',en:'Slava',case:'#d4d0c4',rim:'#666',dial:'#fbf7ea',ink:'#1b1613',
+    hand:'#1b1613',lume:'#fbf7ea',marker:'baton',numerals:'none',hands:'sword',accent:'#c8102e',date:true,
+    fact:'From the Second Moscow Watch Factory. Self-winding, with a date window. Glory, in the name.'},
+  pobeda:{id:'pobeda',name:'ПОБЕДА',sub:'СДЕЛАНО В СССР',en:'Pobeda',case:'#c9a227',rim:'#8a6d12',dial:'#ecdfb8',ink:'#3a2a18',
+    hand:'#2a1a0c',lume:'#ecdfb8',marker:'dots',numerals:'all',hands:'leaf',accent:'#8f0b20',
+    fact:'"Victory". Launched in 1946 in Gorky and named after the end of the war. A watch for the whole country.'},
+  sturm:{id:'sturm',name:'ШТУРМАНСКИЕ',sub:'СДЕЛАНО В СССР',en:'Sturmanskie',case:'#8d8d86',rim:'#333',dial:'#1d1a17',ink:'#f2ead0',
+    hand:'#f2ead0',lume:'#f2ead0',marker:'baton',numerals:'all',hands:'sword',accent:'#e0a020',
+    fact:'The navigator\'s watch. Yuri Gagarin wore one on 12 April 1961, the first human flight into space.'}
+};
+const SKIN_LIST=Object.values(SKINS);
+
+function handShape(kind,which,c,lume){
+  // drawn pointing up from the centre (100,100)
+  if(kind==='sword'){
+    return which==='h'
+      ? `<polygon points="95,108 100,50 105,108 100,114" fill="${c}"/>`
+      : `<polygon points="97,108 100,20 103,108 100,114" fill="${c}"/>`;
+  }
+  if(kind==='leaf'){
+    return which==='h'
+      ? `<polygon points="100,46 108,76 100,108 92,76" fill="${c}"/><rect x="99" y="106" width="2" height="10" fill="${c}"/>`
+      : `<polygon points="100,18 105,60 100,108 95,60" fill="${c}"/><rect x="99" y="106" width="2" height="10" fill="${c}"/>`;
+  }
+  // baton
+  return which==='h'
+    ? `<rect x="96.5" y="52" width="7" height="58" fill="${c}"/><rect x="98.2" y="56" width="3.6" height="34" fill="${lume}"/>`
+    : `<rect x="97.5" y="22" width="5" height="88" fill="${c}"/><rect x="99" y="26" width="2" height="58" fill="${lume}"/>`;
+}
+
+function watchSVG(skin,t,o){
+  const numerals=o.numerals||skin.numerals;
+  const day=new Date().getDate();
+  let s='';
+  s+=`<circle cx="100" cy="100" r="98" fill="${skin.case}" stroke="#1b1613" stroke-width="2.5"/>`;
+  s+=`<circle cx="100" cy="100" r="90" fill="${skin.dial}" stroke="${skin.rim}" stroke-width="2.5"/>`;
+  for(let i=0;i<60;i++){
+    const big=i%5===0,a=i*Math.PI/30,sn=Math.sin(a),cs=Math.cos(a);
+    const r1=86,r2=big?(numerals==='none'?72:78):81;
+    s+=`<line x1="${100+r1*sn}" y1="${100-r1*cs}" x2="${100+r2*sn}" y2="${100-r2*cs}" stroke="${skin.ink}" stroke-width="${big?3.2:1}"/>`;
+  }
+  if(skin.h24){
+    for(let i=1;i<=12;i++){
+      const a=i*Math.PI/6,x=100+46*Math.sin(a),y=100-46*Math.cos(a);
+      s+=`<text x="${x}" y="${y}" font-size="8" fill="${skin.accent}" text-anchor="middle" dominant-baseline="central" font-family="Oswald,sans-serif" font-weight="500">${12+i}</text>`;
+    }
+  }
+  if(numerals!=='none'){
+    for(let i=1;i<=12;i++){
+      if(numerals==='quarters' && i%3) continue;
+      if(skin.date && i===3) continue;
+      const a=i*Math.PI/6,r=skin.h24?64:62,x=100+r*Math.sin(a),y=100-r*Math.cos(a);
+      s+=`<text x="${x}" y="${y}" font-size="${numerals==='quarters'?19:16}" fill="${skin.ink}" text-anchor="middle" dominant-baseline="central" font-family="'Russo One',Oswald,sans-serif">${i}</text>`;
+    }
+  }
+  if(skin.date){
+    s+=`<rect x="134" y="92" width="22" height="16" fill="#fff" stroke="${skin.ink}" stroke-width="1.5"/><text x="145" y="100.5" font-size="11" text-anchor="middle" dominant-baseline="central" fill="${skin.accent}" font-family="Oswald,sans-serif" font-weight="700">${day}</text>`;
+  }
+  if(skin.star) s+=`<polygon points="${starPts(10,4,100,66)}" fill="${skin.accent}"/>`;
+  const by=skin.h24?82:(skin.star?84:74);
+  s+=`<text x="100" y="${by}" font-size="${skin.name.length>8?8:10}" fill="${skin.ink}" text-anchor="middle" font-family="'Russo One',sans-serif" letter-spacing="1">${skin.name}</text>`;
+  s+=`<text x="100" y="${by+10}" font-size="5.5" fill="${skin.ink}" text-anchor="middle" font-family="Oswald,sans-serif" letter-spacing="1.2">${skin.sub}</text>`;
+
+  const ha=t*0.5,ma=(t%60)*6;
+  if(o.hl){
+    const len=o.hl==='hour'?54:o.hl==='minute'?80:84;
+    const ang=o.hl==='hour'?ha:o.hl==='minute'?ma:(o.sec||0)*6;
+    s+=`<line x1="100" y1="100" x2="100" y2="${100-len}" stroke="#d9a521" stroke-width="11" stroke-linecap="round" opacity=".75" transform="rotate(${ang} 100 100)"/>`;
+  }
+  s+=`<g transform="rotate(${ha} 100 100)">${handShape(skin.hands,'h',skin.hand,skin.lume)}</g>`;
+  s+=`<g transform="rotate(${ma} 100 100)">${handShape(skin.hands,'m',skin.hand,skin.lume)}</g>`;
+  if(o.sec!=null){
+    s+=`<g transform="rotate(${o.sec*6} 100 100)"><line x1="100" y1="116" x2="100" y2="16" stroke="${skin.accent}" stroke-width="1.4"/><circle cx="100" cy="100" r="3" fill="${skin.accent}"/></g>`;
+  }
+  s+=`<circle cx="100" cy="100" r="4.5" fill="${skin.case}" stroke="#1b1613" stroke-width="1.5"/>`;
+  return s;
+}
+
+/* ---------- clock widget ---------- */
+function makeClock(host,opt){
+  const c={t:opt.t||0,skin:opt.skin,numerals:opt.numerals||null,hl:opt.hl||null,sec:null,
+    interactive:!!opt.interactive,onChange:opt.onChange||null,onDrag:opt.onDrag||null};
+  host.innerHTML='<svg viewBox="0 0 200 200" role="img" aria-label="analog watch"></svg>';
+  const svg=host.firstChild;
+  if(c.interactive) host.classList.add('drag');
+  c.render=()=>{svg.innerHTML=watchSVG(c.skin,c.t,c)};
+  c.set=(t)=>{c.t=((t%720)+720)%720;c.render();c.onChange&&c.onChange(c.t)};
+  let raf=0;
+  c.animateTo=(target,done)=>{
+    cancelAnimationFrame(raf);
+    const from=c.t;let d=(((target-from)%720)+720)%720;if(d>360)d-=720;
+    const t0=performance.now(),dur=Math.min(900,250+Math.abs(d)*3);
+    const step=now=>{
+      const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);
+      c.t=((from+d*e)%720+720)%720;c.render();
+      if(p<1) raf=requestAnimationFrame(step); else {c.t=Math.round(c.t)%720;c.render();c.onChange&&c.onChange(c.t);done&&done()}
+    };
+    raf=requestAnimationFrame(step);
+  };
+  if(c.interactive){
+    let drag=false;
+    const move=e=>{
+      const r=svg.getBoundingClientRect();
+      const x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2);
+      const m=Math.round(((Math.atan2(x,-y)*180/Math.PI+360)%360)/6)%60;
+      c.t=Math.round(c.t);
+      let d=m-(c.t%60);if(d>30)d-=60;if(d<-30)d+=60;
+      c.t=((c.t+d)%720+720)%720;
+      c.onDrag&&c.onDrag();
+      c.render();c.onChange&&c.onChange(c.t);
+    };
+    svg.addEventListener('pointerdown',e=>{drag=true;cancelAnimationFrame(raf);svg.setPointerCapture(e.pointerId);move(e);e.preventDefault()});
+    svg.addEventListener('pointermove',e=>{if(drag){move(e);e.preventDefault()}});
+    ['pointerup','pointercancel'].forEach(n=>svg.addEventListener(n,()=>{drag=false}));
+  }
+  c.render();
+  return c;
+}
+
+/* ---------- lessons ---------- */
+const LESSONS=[
+ {title:'Meet the Dial',tag:'The three hands',skin:'poljot',t:[10,10],fields:['digital'],hlButtons:true,
+  presets:[[3,0],[6,0],[9,15],[12,30]],
+  html:`<p>Every analog watch has the same parts. Learn to tell them apart and the rest is easy.</p>
+   <p><b>Short, thick hand</b> = the hour hand.<br><b>Long hand</b> = the minute hand.<br><b>Thin, fast hand</b> (often red) = the second hand.</p>
+   <p>The dial has <b>12 numbers</b>. The hour hand needs 12 hours to travel once around. The minute hand goes once around every hour.</p>
+   <div class="callout">Tap the buttons to light up each hand. Then drag the dial and watch how the short hand creeps while the long hand races.</div>`},
+ {title:'Reading the Hour',tag:'Short hand first',skin:'pobeda',t:[3,0],fields:['hour','digital'],
+  presets:[[2,0],[5,0],[9,0],[11,30],[7,45]],
+  html:`<p>Always look at the <b>short hand</b> first. The hour is the number it has <b>just passed</b>.</p>
+   <p>When the long hand points straight up at 12, it is exactly that hour. Short hand on 3 and long hand on 12 = <b>3 o'clock</b>.</p>
+   <div class="callout">Hour hand between 7 and 8? It is still seven-something. The hour changes only when the hand reaches the next number.</div>`},
+ {title:'Counting Minutes',tag:'Every number is 5',skin:'poljot',t:[4,25],fields:['minute','digital'],
+  presets:[[4,5],[4,10],[4,25],[4,40],[4,55]],
+  html:`<p>Now the <b>long hand</b>. Each number on the dial equals <b>five minutes</b>.</p>
+   <p>1 = 5 &nbsp; 2 = 10 &nbsp; 3 = 15 &nbsp; 4 = 20 &nbsp; 5 = 25 &nbsp; 6 = 30 &nbsp; 7 = 35 &nbsp; 8 = 40 &nbsp; 9 = 45 &nbsp; 10 = 50 &nbsp; 11 = 55 &nbsp; 12 = 0</p>
+   <div class="callout">Trick: take the number and multiply by 5. Hand on 7? 7 × 5 = 35 minutes. Small tick marks between the numbers are single minutes.</div>`},
+ {title:'Past and To',tag:'Saying it like a human',skin:'slava',t:[8,15],fields:['says','digital'],
+  presets:[[8,0],[8,15],[8,30],[8,45],[8,20],[8,50]],
+  html:`<p>People rarely say "eight forty". They say it by the <b>half of the dial</b> the long hand is on.</p>
+   <p><b>Right half (1 to 6):</b> minutes <b>past</b> the hour. <b>Left half (7 to 11):</b> minutes <b>to</b> the next hour.</p>
+   <p>Hand on 3 = <b>quarter past</b>. On 6 = <b>half past</b>. On 9 = <b>quarter to</b> the next hour.</p>
+   <div class="callout">Quarter to 9 is 8:45. After half past, the hour you name is the <b>next</b> one.</div>`},
+ {title:'24-Hour Time',tag:'Military and polar style',skin:'raketa',t:[5,45],fields:['digital','h24'],ampm:true,
+  presets:[[1,0],[6,30],[12,0],[5,45],[11,15]],
+  html:`<p>Soviet pilots, soldiers and polar explorers used the <b>24-hour clock</b>. Midnight is 00:00, noon is 12:00, and the afternoon goes on to 13, 14, 15 …</p>
+   <p><b>Afternoon rule:</b> add 12 to the 12-hour time. 5 PM = 17:00. 9 PM = 21:00. Going back? Subtract 12.</p>
+   <p>The red numbers inside the dial of this <b>Raketa</b> show 13 to 24. Flip the switch to see the evening.</p>`},
+ {title:'Field Tricks',tag:'What the pros know',skin:'sturm',t:[2,55],fields:['hour','minute','digital'],
+  presets:[[2,55],[6,50],[11,58],[12,2]],
+  html:`<p><b>Near the top of the hour</b> the hour hand sits almost on the next number. At 2:55 it looks like 3, but the long hand on 11 tells the truth: <b>it is not three yet</b>.</p>
+   <p>Rule: <b>minutes decide</b>. If the long hand is on the left half, the hour hand has not arrived yet.</p>
+   <p><b>The crown</b> is the small knob on the side. Pull it out, turn it to move the hands, push it back in. Do not set the time while the second hand is racing past the 12 if you want to be exact.</p>
+   <div class="callout">Tap 2:55, then 11:58 and 12:02. Notice where the short hand is hiding.</div>`},
+ {title:'Drill: Generate',tag:'Unlimited practice',drill:true,skin:'vostok',t:[0,0],fields:[],presets:[],html:''}
+];
+
+/* ---------- drill lesson ---------- */
+function viewDrill(i,L){
+  const v=$('#view');
+  const D=S.drill||(S.drill={mode:'d2a',hard:false,ok:0,n:0});
+  v.innerHTML=`<button class="back" id="back">← All missions</button>
+   <div class="card"><h2>${i+1}. ${L.title}</h2><p class="sub">${L.tag}</p>
+    <div class="chips" id="mode">
+      <button class="chip" data-m="d2a">Digital → Analog</button>
+      <button class="chip" data-m="a2d">Analog → Digital</button>
+      <button class="chip" id="hard"></button>
+    </div>
+    <div class="clockbox" id="clk"></div>
+    <div class="lcd" id="lcd">--:--</div>
+    <div id="entry"></div>
+    <div id="fb"></div>
+    <button class="btn block" id="gen" style="margin-top:12px">Generate</button>
+    <div class="hint" id="sc"></div>
+   </div>
+   <div class="nav2"><button class="btn alt" id="prev">← Back</button><button class="btn" id="fin">Done — to the exam</button></div>`;
+  let tg,clk,u,checked;
+  const sc=()=>{$('#sc').textContent=`Correct ${D.ok} of ${D.n}`};
+  const modes=()=>{
+    v.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===D.mode));
+    $('#hard').classList.toggle('on',!D.hard);$('#hard').textContent=D.hard?'Numbers off':'Numbers on';
+  };
+  const entry=()=>{
+    if(D.mode==='d2a'){
+      $('#lcd').textContent=time12(tg.h,tg.m);
+      $('#entry').innerHTML=`<div class="hint">Set this time on the watch</div><button class="btn alt block" style="margin-top:8px" id="chk">Check</button>`;
+    } else {
+      $('#lcd').textContent=`${u.h}:${pad(u.m)}`;
+      $('#entry').innerHTML=`<div class="chips" style="justify-content:center">
+        <button class="chip" data-s="h:-1">Hour −</button><button class="chip" data-s="h:1">Hour +</button>
+        <button class="chip" data-s="m:-5">Min −5</button><button class="chip" data-s="m:-1">Min −1</button>
+        <button class="chip" data-s="m:1">Min +1</button><button class="chip" data-s="m:5">Min +5</button></div>
+        <button class="btn alt block" id="chk">Check</button>`;
+    }
+    $('#chk').onclick=check;
+    $('#entry').querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{
+      if(checked)return;
+      const [k,d]=b.dataset.s.split(':');
+      if(k==='h')u.h=((u.h-1+ +d+12)%12)+1; else u.m=(u.m+ +d+60)%60;
+      $('#lcd').textContent=`${u.h}:${pad(u.m)}`;
+    });
+  };
+  function gen(){
+    checked=false;$('#fb').innerHTML='';
+    tg={h:Math.floor(Math.random()*12),m:Math.random()<.5?5*Math.floor(Math.random()*12):Math.floor(Math.random()*60)};
+    u={h:12,m:0};
+    const skin=pick(SKIN_LIST),nums=D.hard?'none':'all';
+    if(D.mode==='d2a'){
+      let start;do{start=Math.floor(Math.random()*720)}while(Math.abs(((start-(tg.h*60+tg.m)+360)%720)-360)<40);
+      clk=makeClock($('#clk'),{skin,t:start,numerals:nums,interactive:true});
+    } else {
+      clk=makeClock($('#clk'),{skin,t:tg.h*60+tg.m,numerals:nums});
+    }
+    entry();
+  }
+  function check(){
+    if(checked)return;
+    checked=true;D.n++;
+    let ok;
+    if(D.mode==='d2a'){
+      const target=tg.h*60+tg.m;
+      ok=Math.abs(((Math.round(clk.t)-target+360)%720)-360)<=1;
+      clk.interactive=false;
+      if(!ok)setTimeout(()=>clk.animateTo(target),350);
+    } else {
+      ok=u.h===(tg.h||12)&&u.m===tg.m;
+    }
+    if(ok)D.ok++;
+    sc();
+    $('#fb').innerHTML=`<div class="fb ${ok?'ok':'no'}"><strong>${ok?'Correct!':'Not quite'}</strong>${ok?phrase(tg.h,tg.m)+'.':explain(tg)}</div>`;
+  }
+  v.querySelector('#mode').onclick=e=>{
+    const b=e.target.closest('.chip');if(!b)return;
+    if(b.id==='hard')D.hard=!D.hard;else if(b.dataset.m)D.mode=b.dataset.m;
+    modes();gen();
+  };
+  $('#gen').onclick=gen;
+  $('#back').onclick=()=>{S.lesson=null;viewLessons();window.scrollTo(0,0)};
+  $('#prev').onclick=()=>{S.lesson=i-1;viewLessons();window.scrollTo(0,0)};
+  $('#fin').onclick=()=>{S.done[i]=1;store('done',S.done);S.tab='quiz';go()};
+  v.onclick=null;
+  modes();sc();gen();
+}
+
+/* ---------- state ---------- */
+const S={tab:'lessons',lesson:null,done:store('done')||{},best:store('best')||{},pm:false,
+  q:null,wsk:'vostok',live:true,timer:0,lessonClock:null};
+
+const TABS=[['lessons','УРОКИ','Lessons'],['bench','МАСТЕРСКАЯ','Workshop'],['quiz','ЭКЗАМЕН','Quiz'],['watches','ЧАСЫ','Watches']];
+function drawTabs(){
+  $('#tabs').innerHTML=TABS.map(([id,ru,en])=>`<button data-tab="${id}" class="${S.tab===id?'on':''}"><small>${ru}</small><span>${en}</span></button>`).join('');
+}
+$('#tabs').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  S.tab=b.dataset.tab;S.lesson=null;if(S.tab!=='quiz')S.q=null;
+  go();
+});
+function go(){
+  clearInterval(S.timer);
+  drawTabs();
+  ({lessons:viewLessons,bench:viewBench,quiz:viewQuiz,watches:viewWatches})[S.tab]();
+  window.scrollTo(0,0);
+}
+
+/* ---------- readout ---------- */
+function readoutHTML(t,fields){
+  const h=Math.floor(t/60),m=t%60,h12=h||12;
+  const rows={
+    digital:['Digital',time12(h,m)],
+    hour:['Hour hand',`last passed <b>${h12}</b>`],
+    minute:['Minute hand',m%5===0?`on <b>${m/5||12}</b> → ${m} min`:`${m} min (${m%5} past the ${Math.floor(m/5)||12})`],
+    says:['You say',phrase(h,m)],
+    h24:['24-hour',`${pad(h+(S.pm?12:0))}:${pad(m)}`]
+  };
+  return fields.map(f=>`<div><i>${rows[f][0]}</i><b>${rows[f][1]}</b></div>`).join('');
+}
+
+/* ---------- lessons view ---------- */
+function viewLessons(){
+  const v=$('#view');
+  if(S.lesson==null){
+    v.innerHTML=`<h2>Training missions</h2><p class="sub">Seven short lessons. Do them in order, comrade.</p>`+
+      LESSONS.map((L,i)=>`<button class="mission" data-i="${i}"><span class="no">${i+1}</span><span><b>${L.title}</b><span>${L.tag}</span></span>${S.done[i]?'<span class="tick">✓</span>':''}</button>`).join('')+
+      `<button class="btn block" id="toquiz">Ready? Take the exam</button>`;
+    v.onclick=e=>{
+      const m=e.target.closest('.mission');
+      if(m){S.lesson=+m.dataset.i;viewLessons()}
+      if(e.target.id==='toquiz'){S.tab='quiz';go()}
+    };
+    return;
+  }
+  const i=S.lesson,L=LESSONS[i];
+  if(L.drill) return viewDrill(i,L);
+  S.pm=false;
+  v.innerHTML=`<button class="back" id="back">← All missions</button>
+   <div class="card">
+    <h2>${i+1}. ${L.title}</h2><p class="sub">${L.tag}</p>
+    <div class="clockbox" id="clk"></div>
+    <div class="chips" id="hlb"></div>
+    <div class="readout" id="ro"></div>
+    <div class="hint">Drag the dial to move the hands</div>
+   </div>
+   <div class="card lessontext">${L.html}
+     <h3>Try these times</h3>
+     <div class="chips" id="pre">${L.presets.map(p=>`<button class="chip" data-t="${p[0]*60+p[1]}">${time12(p[0],p[1])}</button>`).join('')}</div>
+     ${L.ampm?`<h3>Day or night?</h3><div class="chips"><button class="chip on" data-pm="0">☀ Morning</button><button class="chip" data-pm="1">☾ Evening</button></div>`:''}
+   </div>
+   <div class="nav2">
+     ${i>0?'<button class="btn alt" id="prev">← Back</button>':''}
+     ${i<LESSONS.length-1?'<button class="btn" id="next">Next →</button>':'<button class="btn" id="fin">Done — to the exam</button>'}
+   </div>`;
+  const ro=$('#ro');
+  const clock=makeClock($('#clk'),{skin:SKINS[L.skin],t:L.t[0]*60+L.t[1],interactive:true,
+    onChange:t=>{ro.innerHTML=readoutHTML(t,L.fields)}});
+  clock.onChange(clock.t);
+  if(L.hlButtons){
+    const hb=$('#hlb');
+    hb.innerHTML=[['hour','Hour hand'],['minute','Minute hand'],['second','Second hand'],[null,'Off']].map(([k,n])=>`<button class="chip hl-hour" data-hl="${k}">${n}</button>`).join('');
+    hb.onclick=e=>{
+      const b=e.target.closest('.chip');if(!b)return;
+      const k=b.dataset.hl==='null'?null:b.dataset.hl;
+      clock.hl=k;clock.sec=k==='second'?20:null;clock.render();
+      [...hb.children].forEach(x=>x.classList.toggle('on',x===b));
+    };
+  }
+  $('#pre').onclick=e=>{
+    const b=e.target.closest('.chip');if(!b)return;
+    clock.animateTo(+b.dataset.t);
+  };
+  v.querySelectorAll('[data-pm]').forEach(b=>b.onclick=()=>{
+    S.pm=b.dataset.pm==='1';
+    v.querySelectorAll('[data-pm]').forEach(x=>x.classList.toggle('on',x===b));
+    ro.innerHTML=readoutHTML(clock.t,L.fields);
+  });
+  const mark=()=>{S.done[i]=1;store('done',S.done)};
+  $('#back').onclick=()=>{S.lesson=null;viewLessons();window.scrollTo(0,0)};
+  const nx=$('#next'),pv=$('#prev'),fin=$('#fin');
+  if(nx)nx.onclick=()=>{mark();S.lesson=i+1;viewLessons();window.scrollTo(0,0)};
+  if(pv)pv.onclick=()=>{S.lesson=i-1;viewLessons();window.scrollTo(0,0)};
+  if(fin)fin.onclick=()=>{mark();S.tab='quiz';go()};
+  v.onclick=null;
+}
+
+/* ---------- workshop ---------- */
+function viewBench(){
+  const v=$('#view');
+  v.innerHTML=`<h2>Workshop</h2><p class="sub">Pick a watch. Drag the dial. Study the time.</p>
+   <div class="card">
+     <div class="clockbox" id="clk"></div>
+     <div class="lcd" id="lcd">00:00</div>
+     <div class="readout" id="ro"></div>
+     <div class="chips"><button class="chip on" id="live">Live time</button><button class="chip" id="nums">Numbers on</button></div>
+     <div class="hint">Drag to set · tap Live time to return to now</div>
+   </div>
+   <h3>Choose your watch</h3>
+   <div class="chips" id="sk">${SKIN_LIST.map(s=>`<button class="chip ${s.id===S.wsk?'on':''}" data-s="${s.id}">${s.en}</button>`).join('')}</div>`;
+  const ro=$('#ro'),lcd=$('#lcd');
+  let numsOn=true;
+  const upd=t=>{
+    const h=Math.floor(t/60),m=Math.floor(t%60);
+    lcd.textContent=`${pad(h||12)}:${pad(m)}`;
+    ro.innerHTML=readoutHTML(Math.floor(t),['says']);
+  };
+  const clock=makeClock($('#clk'),{skin:SKINS[S.wsk],t:0,interactive:true,
+    onChange:upd,onDrag:()=>{S.live=false;clock.sec=null;$('#live').classList.remove('on')}});
+  function tick(){
+    if(!S.live)return;
+    const d=new Date(),sec=d.getSeconds()+d.getMilliseconds()/1000;
+    clock.t=((d.getHours()%12)*60+d.getMinutes()+sec/60);
+    clock.sec=sec;clock.render();upd(clock.t);
+  }
+  S.live=true;tick();S.timer=setInterval(tick,50);
+  $('#live').onclick=()=>{S.live=true;$('#live').classList.add('on')};
+  $('#nums').onclick=e=>{
+    numsOn=!numsOn;clock.numerals=numsOn?null:'none';clock.render();
+    e.target.classList.toggle('on',numsOn);e.target.textContent=numsOn?'Numbers on':'Numbers off';
+  };
+  $('#sk').onclick=e=>{
+    const b=e.target.closest('.chip');if(!b)return;
+    S.wsk=b.dataset.s;clock.skin=SKINS[S.wsk];clock.render();
+    [...$('#sk').children].forEach(x=>x.classList.toggle('on',x===b));
+  };
+  v.onclick=null;
+}
+
+/* ---------- watches ---------- */
+function viewWatches(){
+  const v=$('#view');
+  v.innerHTML=`<h2>Soviet watches</h2><p class="sub">Six legends of the Soviet watch industry.</p>`+
+    SKIN_LIST.map(s=>`<div class="card wcard"><div class="clockbox" data-s="${s.id}"></div><div><small>${s.name}</small><h3>${s.en}</h3><p>${s.fact}</p></div></div>`).join('');
+  v.querySelectorAll('.clockbox').forEach((el,i)=>makeClock(el,{skin:SKINS[el.dataset.s],t:10*60+10}));
+  v.onclick=null;
+}
+
+/* ---------- quiz ---------- */
+const LEVELS={
+  cadet:{ru:'КУРСАНТ',en:'Cadet',desc:'Full hours and half hours. Numbers on the dial.',numerals:'all',step:()=>Math.random()<.5?0:30},
+  officer:{ru:'ОФИЦЕР',en:'Officer',desc:'Any five minutes. Watch style decides the dial.',numerals:null,step:()=>5*Math.floor(Math.random()*12)},
+  general:{ru:'ГЕНЕРАЛ',en:'General',desc:'Any minute. No numbers, only tick marks.',numerals:'none',step:()=>Math.floor(Math.random()*60)}
+};
+const RANKS=[[0,'Recruit','Новобранец'],[4,'Private','Рядовой'],[6,'Sergeant','Сержант'],[8,'Captain','Капитан'],[10,'Marshal','Маршал']];
+const rankOf=n=>[...RANKS].reverse().find(r=>n>=r[0]);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
+
+function genQuestions(level){
+  const L=LEVELS[level];
+  const types=['read','word','set','read','convert','set','word','read','set','read'];
+  return types.map(type=>{
+    const h=Math.floor(Math.random()*12),m=L.step();
+    return {type,h,m,skin:pick(SKIN_LIST),h24:Math.floor(Math.random()*24)};
+  });
+}
+function uniqueOptions(correct,cands,fmt){
+  const out=[fmt(correct)];
+  for(const c of shuffle(cands)){const s=fmt(c);if(!out.includes(s))out.push(s);if(out.length>=4)break}
+  return out;
+}
+function buildOptions(q,level){
+  const {h,m}=q,T=h*60+m;
+  const norm=x=>((x%720)+720)%720;
+  if(q.type==='read'){
+    const c=[];
+    if(m%5===0) c.push(norm((m/5)*60+h*5));            // hands swapped
+    c.push(norm(T+60),norm(T-60),norm(T+(level==='general'?1:5)),norm(T-(level==='general'?1:5)),
+           norm(Math.floor(T/60)*60+((60-m)%60)),norm(T+30),norm(T+15));
+    return {correct:time12(h,m),opts:uniqueOptions(T,c,t=>time12(Math.floor(t/60),t%60))};
+  }
+  if(q.type==='word'){
+    const c=[norm(T+60),norm(T-60),norm(Math.floor(T/60)*60+((60-m)%60)),norm(T+15),norm(T-15),norm(T+30),norm(Math.floor(T/60)*60+30)];
+    // "to" vs "past" confusion
+    return {correct:phrase(h,m),opts:uniqueOptions(T,c,t=>phrase(Math.floor(t/60),t%60))};
+  }
+  if(q.type==='convert'){
+    const H=q.h24,mm=m;
+    const f=(hh,pm)=>`${(hh%12)||12}:${pad(mm)} ${pm?'PM':'AM'}`;
+    const correct=f(H,H>=12);
+    const c=[f(H,H<12),f(H+1,H>=12),f(H-1,H>=12),f(H+2,H>=12),f(H+10,H>=12),f(H-10,H>=12)];
+    const out=[correct];
+    for(const s of shuffle(c)){if(!out.includes(s))out.push(s);if(out.length>=4)break}
+    return {correct,opts:out};
+  }
+}
+function explain(q){
+  const {h,m}=q,h12=h||12;
+  const mh=m%5===0?`long hand on ${m/5||12} (${m} minutes)`:`long hand ${m%5} tick${m%5>1?'s':''} past ${Math.floor(m/5)||12} (${m} minutes)`;
+  return `Short hand just passed ${h12}, ${mh}. That is ${time12(h,m)}, "${phrase(h,m).toLowerCase()}".`;
+}
+
+function viewQuiz(){
+  const v=$('#view');
+  if(!S.q){
+    v.innerHTML=`<h2>The exam</h2><p class="sub">Ten questions. Choose your rank of difficulty.</p>`+
+      Object.entries(LEVELS).map(([k,L])=>`<button class="mission lvl" data-l="${k}">
+        <span><b>${L.ru} · ${L.en}</b><small>${L.desc}</small></span>
+        <span class="tick" style="color:var(--red)">${S.best[k]!=null?S.best[k]+'/10':'▶'}</span></button>`).join('')+
+      `<p class="hint">Best score is saved on this phone</p>`;
+    v.onclick=e=>{const b=e.target.closest('[data-l]');if(!b)return;
+      S.q={level:b.dataset.l,i:0,score:0,res:[],qs:genQuestions(b.dataset.l),answered:false};viewQuiz()};
+    return;
+  }
+  const Q=S.q;
+  if(Q.i>=Q.qs.length){
+    const [,en,ru]=rankOf(Q.score);
+    if(S.best[Q.level]==null||Q.score>S.best[Q.level]){S.best[Q.level]=Q.score;store('best',S.best)}
+    v.innerHTML=`<div class="card" style="text-align:center">
+      <p class="sub">${LEVELS[Q.level].ru} · ${LEVELS[Q.level].en}</p>
+      <div class="big">${Q.score}/10</div>
+      <p style="margin:16px 0"><span class="stamp">${en}</span></p>
+      <p class="sub">${ru}</p>
+      <p>${Q.score===10?'Perfect. The motherland thanks you.':Q.score>=7?'Solid work. Tighten up the details.':'Back to the lessons, comrade. Then try again.'}</p>
+      <div class="progress">${Q.res.map(r=>`<span class="${r?'ok':'no'}"></span>`).join('')}</div>
+    </div>
+    <div class="nav2"><button class="btn alt" id="again">Again</button><button class="btn" id="les">Lessons</button></div>`;
+    $('#again').onclick=()=>{S.q=null;viewQuiz()};
+    $('#les').onclick=()=>{S.q=null;S.tab='lessons';go()};
+    v.onclick=null;return;
+  }
+  const q=Q.qs[Q.i],L=LEVELS[Q.level];
+  Q.answered=false;
+  const prog=`<div class="progress">${Q.qs.map((_,i)=>`<span class="${i<Q.i?(Q.res[i]?'ok':'no'):i===Q.i?'now':''}"></span>`).join('')}</div>`;
+  const next=()=>{Q.i++;viewQuiz();window.scrollTo(0,0)};
+  const feedback=(ok,msg)=>{
+    Q.answered=true;Q.res[Q.i]=ok;if(ok)Q.score++;
+    $('#fb').innerHTML=`<div class="fb ${ok?'ok':'no'}"><strong>${ok?'Correct!':'Not quite'}</strong>${msg}</div>
+      <button class="btn block" style="margin-top:12px" id="nx">${Q.i===9?'See result':'Next'}</button>`;
+    $('#nx').onclick=next;
+    $('#nx').scrollIntoView({block:'nearest'});
+  };
+  if(q.type==='set'){
+    const target=q.h*60+q.m;
+    let start;do{start=Math.floor(Math.random()*720)}while(Math.abs(((start-target+360)%720)-360)<40);
+    v.innerHTML=`${prog}<div class="card">
+      <p class="prompt">Set the watch to <span style="color:var(--red)">${time12(q.h,q.m)}</span></p>
+      <div class="clockbox" id="clk"></div>
+      <div class="hint">Drag the dial</div>
+      <div id="fb"><button class="btn block" style="margin-top:12px" id="rep">Report</button></div></div>`;
+    const clk=makeClock($('#clk'),{skin:q.skin,t:start,numerals:L.numerals,interactive:true});
+    $('#rep').onclick=()=>{
+      const diff=Math.abs(((Math.round(clk.t)-target+360)%720)-360);
+      clk.interactive=false;
+      const set=time12(Math.floor(clk.t/60),Math.round(clk.t)%60);
+      feedback(diff<=1,diff<=1?`Exactly ${time12(q.h,q.m)}. ${phrase(q.h,q.m)}.`:`You set ${set}. Target was ${time12(q.h,q.m)}. ${explain(q)}`);
+      clk.hl=null;
+      // show the target
+      setTimeout(()=>clk.animateTo(target),350);
+    };
+  } else {
+    const {correct,opts}=buildOptions(q,Q.level);
+    const o=shuffle(opts);
+    const isWord=q.type==='word',isConv=q.type==='convert';
+    v.innerHTML=`${prog}<div class="card">
+      <p class="prompt">${isConv?'Convert to 12-hour time':isWord?'How do you say this time?':'What time does the watch show?'}</p>
+      ${isConv
+        ?`<div class="lcd" style="font-size:64px">${pad(q.h24)}:${pad(q.m)}</div><p class="hint">Raketa 24-hour log</p>`
+        :`<div class="clockbox" id="clk"></div>`}
+      <div class="opts ${isWord?'one':''}" id="opts">${o.map(x=>`<button class="opt" data-v="${x}">${x}</button>`).join('')}</div>
+      <div id="fb"></div></div>`;
+    if(!isConv) makeClock($('#clk'),{skin:q.skin,t:q.h*60+q.m,numerals:L.numerals});
+    $('#opts').onclick=e=>{
+      const b=e.target.closest('.opt');if(!b||Q.answered)return;
+      const ok=b.dataset.v===correct;
+      b.classList.add(ok?'right':'wrong');
+      if(!ok)[...$('#opts').children].forEach(x=>{if(x.dataset.v===correct)x.classList.add('right')});
+      feedback(ok,isConv?`${pad(q.h24)}:${pad(q.m)} is ${correct}. ${q.h24>=12?'Afternoon: subtract 12.':'Morning: the same hour.'}`:explain(q));
+    };
+  }
+  v.onclick=null;
+}
+
+/* ---------- install bits: icon + manifest ---------- */
+(function(){
+  try{
+    const c=document.createElement('canvas');c.width=c.height=180;
+    const x=c.getContext('2d');
+    x.fillStyle='#c8102e';x.fillRect(0,0,180,180);
+    x.fillStyle='#1b1613';x.beginPath();x.moveTo(110,0);x.lineTo(180,0);x.lineTo(180,110);x.closePath();x.fill();
+    x.beginPath();
+    for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?18:42;x.lineTo(90+r*Math.cos(a),52+r*Math.sin(a))}
+    x.closePath();x.fillStyle='#d9a521';x.fill();
+    x.lineWidth=4;x.strokeStyle='#1b1613';x.stroke();
+    x.fillStyle='#efe3c2';x.font='400 52px "Russo One",Impact,sans-serif';x.textAlign='center';
+    x.fillText('ЧАСЫ',90,150);
+    const url=c.toDataURL('image/png');
+    $('#touchIcon').href=url;
+    const man={name:'Watch Academy',short_name:'ЧАСЫ',display:'standalone',background_color:'#c8102e',theme_color:'#c8102e',
+      start_url:location.href.split('#')[0],icons:[{src:url,sizes:'180x180',type:'image/png'}]};
+    $('#manifestLink').href=URL.createObjectURL(new Blob([JSON.stringify(man)],{type:'application/manifest+json'}));
+  }catch(e){}
+})();
+
+go();
+</script>
+</body>
+</html>
