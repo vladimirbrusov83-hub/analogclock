@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Watch Academy · ЧАСЫ</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#c8102e">
+<meta name="theme-color" content="#3b4220">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,43 +13,57 @@
 <link rel="manifest" id="manifestLink" href="">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Russo+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Russo+One&family=Black+Ops+One&display=swap" rel="stylesheet">
 <style>
 :root{
-  --red:#c8102e; --red-d:#8f0b20; --cream:#efe3c2; --paper:#f6eed8;
-  --ink:#1b1613; --gold:#d9a521; --muted:#6b5d4b; --ok:#2f6b2f;
-  --head:'Russo One','Oswald',Impact,sans-serif;
+  --red:#c8102e; --red-d:#8f0b20; --cream:#e4dcb6; --paper:#bdb98f;
+  --ink:#1b1613; --gold:#d9a521; --muted:#5a5238; --ok:#2f6b2f; --olive:#3b4220; --olive-l:#566131;
+  --head:'Black Ops One','Russo One','Oswald',Impact,sans-serif;
   --body:'Oswald','Arial Narrow',Arial,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
 body{
-  background:var(--paper);
-  background-image:repeating-linear-gradient(45deg,transparent 0 14px,rgba(27,22,19,.035) 14px 15px);
+  background-color:var(--paper);
+  background-image:
+    radial-gradient(ellipse 130px 90px at 12% 14%,rgba(86,97,49,.55) 0 60%,transparent 62%),
+    radial-gradient(ellipse 160px 80px at 78% 30%,rgba(70,52,28,.40) 0 60%,transparent 62%),
+    radial-gradient(ellipse 110px 120px at 30% 62%,rgba(59,66,32,.50) 0 60%,transparent 62%),
+    radial-gradient(ellipse 150px 90px at 88% 74%,rgba(86,97,49,.50) 0 60%,transparent 62%),
+    radial-gradient(ellipse 120px 70px at 8% 92%,rgba(70,52,28,.38) 0 60%,transparent 62%);
+  background-size:520px 520px;background-attachment:fixed;
   color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.35;
   -webkit-user-select:none;user-select:none;overscroll-behavior:none;
 }
 #app{max-width:520px;margin:0 auto;min-height:100%;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 header{
-  position:relative;background:var(--red);color:var(--cream);
-  padding:calc(14px + env(safe-area-inset-top)) 16px 16px;
+  position:relative;background:var(--olive);color:var(--cream);
+  padding:calc(14px + env(safe-area-inset-top)) 16px 12px;
   border-bottom:5px solid var(--ink);overflow:hidden;
+  background-image:
+    radial-gradient(ellipse 90px 50px at 20% 30%,rgba(86,97,49,.8) 0 60%,transparent 62%),
+    radial-gradient(ellipse 110px 60px at 60% 80%,rgba(27,22,19,.35) 0 60%,transparent 62%),
+    radial-gradient(ellipse 70px 50px at 92% 20%,rgba(86,97,49,.7) 0 60%,transparent 62%);
 }
-header::after{ /* black constructivist wedge */
-  content:"";position:absolute;right:-30px;top:-20px;width:150px;height:200px;
-  background:var(--ink);transform:rotate(18deg);opacity:.92;
-}
-header .star{position:absolute;right:20px;top:calc(12px + env(safe-area-inset-top));z-index:2;width:46px;height:46px}
+header .flag{position:absolute;right:14px;top:calc(12px + env(safe-area-inset-top));z-index:2;width:92px;height:auto;
+  filter:drop-shadow(3px 3px 0 var(--ink))}
+header .ak{position:relative;z-index:2;display:block;width:100%;max-width:290px;height:auto;margin:10px 0 0;
+  filter:drop-shadow(2px 2px 0 rgba(0,0,0,.45))}
 header h1{position:relative;z-index:2;margin:0;font:400 38px/1 var(--head);letter-spacing:.04em}
 header p{position:relative;z-index:2;margin:6px 0 0;font-weight:500;letter-spacing:.18em;text-transform:uppercase;font-size:13px}
-.stripe{height:8px;background:repeating-linear-gradient(90deg,var(--gold) 0 18px,var(--ink) 18px 36px)}
+.stripe{height:10px;background:repeating-linear-gradient(-45deg,var(--gold) 0 12px,var(--ink) 12px 24px)}
 main{padding:16px}
 h2{font:400 26px/1.1 var(--head);margin:0 0 6px;text-transform:uppercase}
 h3{font:400 18px/1.1 var(--head);margin:14px 0 6px;text-transform:uppercase;color:var(--red-d)}
 .sub{color:var(--muted);margin:0 0 14px;font-size:15px;letter-spacing:.04em}
 .card{
-  background:var(--cream);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);
-  padding:14px;margin:0 0 16px;
+  background-color:var(--cream);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);
+  background-image:
+    radial-gradient(circle at 9px 9px,#6b6a52 0 2.5px,#1b1613 3px 3.5px,transparent 4px),
+    radial-gradient(circle at calc(100% - 9px) 9px,#6b6a52 0 2.5px,#1b1613 3px 3.5px,transparent 4px),
+    radial-gradient(circle at 9px calc(100% - 9px),#6b6a52 0 2.5px,#1b1613 3px 3.5px,transparent 4px),
+    radial-gradient(circle at calc(100% - 9px) calc(100% - 9px),#6b6a52 0 2.5px,#1b1613 3px 3.5px,transparent 4px);
+  padding:16px;margin:0 0 16px;
 }
 button{font:inherit;cursor:pointer;color:inherit}
 .btn{
@@ -154,9 +168,34 @@ nav button.on small{color:var(--cream)}
 <body>
 <div id="app">
   <header>
-    <svg class="star" viewBox="-50 -50 100 100" aria-hidden="true"><polygon id="hstar" fill="#d9a521" stroke="#1b1613" stroke-width="5"/></svg>
+    <svg class="flag" viewBox="0 0 90 60" aria-label="USSR flag">
+      <rect width="90" height="60" fill="#c8102e" stroke="#1b1613" stroke-width="2.5"/>
+      <g fill="none" stroke="#f2c230" stroke-linecap="round">
+        <path d="M31 47 A17 17 0 1 1 57 36" stroke-width="4.5"/>
+        <path d="M57 36 L63 30 L58 40 Z" fill="#f2c230" stroke-width="1"/>
+        <line x1="32" y1="22" x2="58" y2="48" stroke-width="3.5"/>
+      </g>
+      <rect x="20" y="14.5" width="20" height="8" rx="1" fill="#f2c230" transform="rotate(-45 30 18.5)"/>
+      <polygon id="hstar" fill="#f2c230" stroke="#c8102e" stroke-width=".6"/>
+    </svg>
     <h1>ЧАСЫ</h1>
     <p>Watch Academy · Time is a duty</p>
+    <svg class="ak" viewBox="0 0 300 86" aria-label="AK-47">
+      <rect x="170" y="25" width="86" height="6" fill="#1b1613"/>
+      <rect x="226" y="35" width="62" height="5" fill="#1b1613"/>
+      <rect x="284" y="32" width="12" height="11" fill="#1b1613"/>
+      <polygon points="272,35 275,26 279,26 279,35" fill="#1b1613"/>
+      <polygon points="170,33 226,33 226,52 170,52" fill="#8a4b1c" stroke="#1b1613" stroke-width="2"/>
+      <rect x="170" y="28" width="56" height="5" fill="#6b3a15" stroke="#1b1613" stroke-width="1.5"/>
+      <rect x="72" y="28" width="100" height="26" fill="#2b2824" stroke="#1b1613" stroke-width="2"/>
+      <path d="M72 28 Q122 20 172 28" fill="#3a3631" stroke="#1b1613" stroke-width="2"/>
+      <polygon points="1,29 14,26 72,34 72,54 18,64 1,60" fill="#8a4b1c" stroke="#1b1613" stroke-width="2"/>
+      <polygon points="88,54 106,54 100,80 84,80" fill="#8a4b1c" stroke="#1b1613" stroke-width="2"/>
+      <path d="M122 54 L152 54 L160 70 Q165 80 168 85 L146 85 Q143 72 130 64 Z" fill="#3a3631" stroke="#1b1613" stroke-width="2"/>
+      <path d="M108 54 Q112 66 126 62" fill="none" stroke="#1b1613" stroke-width="2.5"/>
+      <circle cx="140" cy="38" r="2.5" fill="#d9a521"/>
+      <rect x="150" y="36" width="14" height="3" fill="#d9a521"/>
+    </svg>
   </header>
   <div class="stripe"></div>
   <main id="view"></main>
@@ -170,7 +209,7 @@ const pad=n=>String(n).padStart(2,'0');
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 function store(k,v){try{if(v===undefined){return JSON.parse(localStorage.getItem('sw_'+k))}localStorage.setItem('sw_'+k,JSON.stringify(v))}catch(e){return null}}
 function starPts(r,r2,cx=0,cy=0){let p=[];for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r2:r;p.push((cx+rr*Math.cos(a)).toFixed(1)+','+(cy+rr*Math.sin(a)).toFixed(1))}return p.join(' ')}
-$('#hstar').setAttribute('points',starPts(42,17));
+$('#hstar').setAttribute('points',starPts(7.5,3,20,13));
 
 /* ---------- time words ---------- */
 const NUM=['twelve','one','two','three','four','five','six','seven','eight','nine','ten','eleven'];
